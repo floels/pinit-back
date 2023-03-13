@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PintAppConfig(AppConfig):
+class PintApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'pint_app'
+    name = 'pint_api'
