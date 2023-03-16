@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from pinit_api.constants import ERROR_CODE_INVALID_USERNAME, ERROR_CODE_INVALID_PASSWORD
 
+
 class AuthenticationTests(TestCase):
     def setUp(self):
         # Create the user who will authenticate:
@@ -44,10 +45,11 @@ class AuthenticationTests(TestCase):
             "/api/token/", data_wrong_username, format="json"
         )
 
+        self.assertEqual(response_wrong_username.status_code, 401)
         self.assertEqual(
-            response_wrong_username.status_code, 401
+            response_wrong_username.json()["errors"],
+            [{"code": ERROR_CODE_INVALID_USERNAME}],
         )
-        self.assertEqual(response_wrong_username.json()['errors'], [{'code': ERROR_CODE_INVALID_USERNAME}])
 
         data_wrong_password = {
             "username": self.user_username,
@@ -57,10 +59,11 @@ class AuthenticationTests(TestCase):
             "/api/token/", data_wrong_password, format="json"
         )
 
+        self.assertEqual(response_wrong_password.status_code, 401)
         self.assertEqual(
-            response_wrong_password.status_code, 401
+            response_wrong_password.json()["errors"],
+            [{"code": ERROR_CODE_INVALID_PASSWORD}],
         )
-        self.assertEqual(response_wrong_password.json()['errors'], [{'code': ERROR_CODE_INVALID_PASSWORD}])
 
     def test_refresh_jw_token_wrong_refresh(self):
         """
