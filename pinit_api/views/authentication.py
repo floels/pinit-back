@@ -1,18 +1,17 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView as SimpleJWTTokenObtainPairView,
+    TokenRefreshView as SimpleJWTTokenRefreshView,
+)
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from .constants import ERROR_CODE_INVALID_USERNAME, ERROR_CODE_INVALID_PASSWORD
+from ..constants import ERROR_CODE_INVALID_USERNAME, ERROR_CODE_INVALID_PASSWORD
+from .authentication_doc import SWAGGER_SCHEMAS
 
 
-
-class TokenObtainView(TokenObtainPairView):
-    @swagger_auto_schema(
-        operation_description="Takes sign-in credentials and returns a pair of access/refresh tokens if valid.",
-    )
-
+class TokenObtainPairView(SimpleJWTTokenObtainPairView):
+    @swagger_auto_schema(**SWAGGER_SCHEMAS["TokenObtainPairView"])
     def post(self, request):
         data = request.POST
         username = data.get("username")
@@ -34,7 +33,13 @@ class TokenObtainView(TokenObtainPairView):
 
         return JsonResponse(
             {
-                "access_token": str(refresh_token.access_token),
-                "refresh_token": str(refresh_token),
+                "access": str(refresh_token.access_token),
+                "refresh": str(refresh_token),
             }
         )
+
+
+class TokenRefreshView(SimpleJWTTokenRefreshView):
+    @swagger_auto_schema(**SWAGGER_SCHEMAS["TokenRefreshView"])
+    def post(self, request):
+        return super().post(request)
