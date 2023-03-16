@@ -1,18 +1,16 @@
-from rest_framework import status
-from rest_framework.test import APITestCase
+from django.test import TestCase
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from pinit_api.constants import ERROR_CODE_INVALID_USERNAME, ERROR_CODE_INVALID_PASSWORD
 
-
-class AuthenticationTests(APITestCase):
+class AuthenticationTests(TestCase):
     def setUp(self):
         # Create the user who will authenticate:
-        self.user_username = "myuser"
+        self.user_username = "myuser@example.com"
         self.user_password = "mypassword"
 
         self.user = User.objects.create_user(
             username=self.user_username,
-            email="myuser@example.com",
+            email=self.user_username,
             password=self.user_password,
         )
 
@@ -23,18 +21,18 @@ class AuthenticationTests(APITestCase):
         data = {"username": self.user_username, "password": self.user_password}
         response_obtain = self.client.post("/api/token/", data, format="json")
 
-        self.assertEqual(response_obtain.status_code, status.HTTP_200_OK)
-        access_token = response_obtain.data["access"]
+        self.assertEqual(response_obtain.status_code, 200)
+        access_token = response_obtain.json()["access_token"]
         assert bool(access_token)
 
         # Refresh the access token:
-        refresh_token = response_obtain.data["refresh"]
+        refresh_token = response_obtain.json()["refresh_token"]
         response_refresh = self.client.post(
             "/api/token/refresh/", {"refresh": refresh_token}, format="json"
         )
 
-        self.assertEqual(response_refresh.status_code, status.HTTP_200_OK)
-        refreshed_access_token = response_refresh.data["access"]
+        self.assertEqual(response_refresh.status_code, 200)
+        refreshed_access_token = response_refresh.json()["access"]
         assert bool(refreshed_access_token)
 
     def test_obtain_jw_token_wrong_credentials(self):
@@ -47,8 +45,9 @@ class AuthenticationTests(APITestCase):
         )
 
         self.assertEqual(
-            response_wrong_username.status_code, status.HTTP_401_UNAUTHORIZED
+            response_wrong_username.status_code, 401
         )
+        self.assertEqual(response_wrong_username.json()['errors'], [{'code': ERROR_CODE_INVALID_USERNAME}])
 
         data_wrong_password = {
             "username": self.user_username,
@@ -59,8 +58,9 @@ class AuthenticationTests(APITestCase):
         )
 
         self.assertEqual(
-            response_wrong_password.status_code, status.HTTP_401_UNAUTHORIZED
+            response_wrong_password.status_code, 401
         )
+        self.assertEqual(response_wrong_password.json()['errors'], [{'code': ERROR_CODE_INVALID_PASSWORD}])
 
     def test_refresh_jw_token_wrong_refresh(self):
         """
@@ -70,4 +70,4 @@ class AuthenticationTests(APITestCase):
             "/api/token/refresh/", {"refresh": "wrong.refreshToken"}, format="json"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, 401)
