@@ -23,11 +23,11 @@ class AuthenticationTests(TestCase):
         response_obtain = self.client.post("/api/token/", data, format="json")
 
         self.assertEqual(response_obtain.status_code, 200)
-        access_token = response_obtain.json()["access_token"]
+        access_token = response_obtain.json()["access"]
         assert bool(access_token)
 
         # Refresh the access token:
-        refresh_token = response_obtain.json()["refresh_token"]
+        refresh_token = response_obtain.json()["refresh"]
         response_refresh = self.client.post(
             "/api/token/refresh/", {"refresh": refresh_token}, format="json"
         )
