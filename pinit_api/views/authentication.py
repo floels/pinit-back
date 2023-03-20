@@ -13,9 +13,8 @@ from .authentication_doc import SWAGGER_SCHEMAS
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):
     @swagger_auto_schema(**SWAGGER_SCHEMAS["TokenObtainPairView"])
     def post(self, request):
-        data = request.POST
-        username = data.get("username")
-        password = data.get("password")
+        username = request.data.get("username")
+        password = request.data.get("password")
 
         try:
             user = User.objects.get(username=username)
