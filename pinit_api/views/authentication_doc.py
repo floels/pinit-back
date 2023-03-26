@@ -2,8 +2,9 @@ from drf_yasg import openapi
 
 SWAGGER_SCHEMAS = {
     "TokenObtainPairView": {
+        "operation_summary": "Obtain JW token",
         "operation_description": "Takes sign-in credentials and returns a pair of access and refresh token if credentials are valid.",
-        "tags": ["Signup and authentication"],
+        "tags": ["Sign-up and authentication"],
         "request_body": openapi.Schema(
             type="object",
             properties={
@@ -63,8 +64,8 @@ SWAGGER_SCHEMAS = {
         },
     },
     "TokenRefreshView": {
-        "operation_summary": "token_refresh",
-        "tags": ["Signup and authentication"],
+        "operation_summary": "Refresh JW token",
+        "tags": ["Sign-up and authentication"],
         "request_body": openapi.Schema(
             type="object",
             properties={
@@ -96,8 +97,9 @@ SWAGGER_SCHEMAS = {
         },
     },
     "SignupView": {
+        "operation_summary": "Sign up",
         "operation_description": "Takes sign-up data and returns a pair of access and refresh token if sign-up was successful.",
-        "tags": ["Signup and authentication"],
+        "tags": ["Sign-up and authentication"],
         "request_body": openapi.Schema(
             type="object",
             properties={
@@ -133,8 +135,8 @@ SWAGGER_SCHEMAS = {
                     }
                 },
             ),
-            401: openapi.Response(
-                description="Invalid username or password",
+            400: openapi.Response(
+                description="Invalid signup data",
                 schema=openapi.Schema(
                     type="object",
                     properties={
@@ -147,7 +149,7 @@ SWAGGER_SCHEMAS = {
                                         type="string",
                                         description="Error code",
                                         min_length=1,
-                                        enum=["invalid_username", "invalid_password"],
+                                        enum=["invalid_username", "invalid_password", "invalid_birthdate", "email_already_signed_up"],
                                     )
                                 },
                             ),
@@ -155,7 +157,7 @@ SWAGGER_SCHEMAS = {
                     },
                 ),
                 examples={
-                    "application/json": {"errors": [{"code": "invalid_username"}]}
+                    "application/json": {"errors": [{"code": "email_already_signed_up"}]}
                 },
             ),
         },

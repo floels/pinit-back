@@ -15,6 +15,7 @@ from .authentication_doc import SWAGGER_SCHEMAS
 class SignupView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
+    @swagger_auto_schema(**SWAGGER_SCHEMAS["SignupView"])
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
 
