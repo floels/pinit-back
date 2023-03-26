@@ -18,6 +18,7 @@ urlpatterns = [
         schema_view.with_ui("redoc", cache_timeout=0),
         name="schema-redoc",
     ),
+    path("signup/", authentication.SignupView.as_view(), name="signup"),
     path("token/", authentication.TokenObtainPairView.as_view(), name="token_obtain"),
     path(
         "token/refresh/",

@@ -70,6 +70,10 @@ WSGI_APPLICATION = "pinit.wsgi.application"
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
+# https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#substituting-a-custom-user-model
+AUTH_USER_MODEL = "pinit_api.User"
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
