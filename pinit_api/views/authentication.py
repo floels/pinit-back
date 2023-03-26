@@ -4,11 +4,16 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView as SimpleJWTTokenObtainPairView,
     TokenRefreshView as SimpleJWTTokenRefreshView,
 )
+from rest_framework_simplejwt.exceptions import InvalidToken
 from ..models import User
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
-from ..constants import ERROR_CODE_INVALID_EMAIL, ERROR_CODE_INVALID_PASSWORD
+from ..constants import (
+    ERROR_CODE_INVALID_EMAIL,
+    ERROR_CODE_INVALID_PASSWORD,
+    ERROR_CODE_INVALID_REFRESH_TOKEN,
+)
 from .authentication_doc import SWAGGER_SCHEMAS
 
 
@@ -69,6 +74,14 @@ class TokenObtainPairView(SimpleJWTTokenObtainPairView):
 
 
 class TokenRefreshView(SimpleJWTTokenRefreshView):
+    def handle_exception(self, exception):
+        if isinstance(exception, InvalidToken):
+            return JsonResponse(
+                {"errors": [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}]}, status=400
+            )
+
+        return super().handle_exception(exception)
+
     @swagger_auto_schema(**SWAGGER_SCHEMAS["TokenRefreshView"])
     def post(self, request):
         return super().post(request)

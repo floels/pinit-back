@@ -5,6 +5,7 @@ from ..constants import (
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
     ERROR_CODE_INVALID_BIRTHDATE,
+    ERROR_CODE_INVALID_REFRESH_TOKEN,
 )
 
 
@@ -224,4 +225,8 @@ class AuthenticationTests(TestCase):
             "/api/token/refresh/", {"refresh": "wrong.refreshToken"}, format="json"
         )
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}],
+        )

@@ -93,7 +93,31 @@ SWAGGER_SCHEMAS = {
                     }
                 },
             ),
-            401: openapi.Response(description="Invalid refresh token"),
+            400: openapi.Response(
+                description="Invalid refresh token",
+                schema=openapi.Schema(
+                    type="object",
+                    properties={
+                        "errors": openapi.Schema(
+                            type="array",
+                            items=openapi.Schema(
+                                type="object",
+                                properties={
+                                    "code": openapi.Schema(
+                                        type="string",
+                                        description="Error code",
+                                        min_length=1,
+                                        enum=["invalid_refresh_token"],
+                                    )
+                                },
+                            ),
+                        )
+                    },
+                ),
+                examples={
+                    "application/json": {"errors": [{"code": "invalid_refresh_token"}]}
+                },
+            ),
         },
     },
     "SignupView": {
@@ -149,7 +173,12 @@ SWAGGER_SCHEMAS = {
                                         type="string",
                                         description="Error code",
                                         min_length=1,
-                                        enum=["invalid_username", "invalid_password", "invalid_birthdate", "email_already_signed_up"],
+                                        enum=[
+                                            "invalid_username",
+                                            "invalid_password",
+                                            "invalid_birthdate",
+                                            "email_already_signed_up",
+                                        ],
                                     )
                                 },
                             ),
@@ -157,7 +186,9 @@ SWAGGER_SCHEMAS = {
                     },
                 ),
                 examples={
-                    "application/json": {"errors": [{"code": "email_already_signed_up"}]}
+                    "application/json": {
+                        "errors": [{"code": "email_already_signed_up"}]
+                    }
                 },
             ),
         },
