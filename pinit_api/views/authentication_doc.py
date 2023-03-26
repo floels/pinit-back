@@ -114,7 +114,7 @@ SWAGGER_SCHEMAS = {
         ),
         "responses": {
             200: openapi.Response(
-                description="Successful sign-in",
+                description="Successful signup",
                 schema=openapi.Schema(
                     type="object",
                     properties={
