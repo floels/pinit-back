@@ -174,7 +174,7 @@ SWAGGER_SCHEMAS = {
                                         description="Error code",
                                         min_length=1,
                                         enum=[
-                                            "invalid_username",
+                                            "invalid_email",
                                             "invalid_password",
                                             "invalid_birthdate",
                                             "email_already_signed_up",
