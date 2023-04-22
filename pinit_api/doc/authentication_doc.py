@@ -5,6 +5,7 @@ SWAGGER_SCHEMAS = {
         "operation_summary": "Obtain JW token",
         "operation_description": "Takes sign-in credentials and returns a pair of access and refresh token if credentials are valid.",
         "tags": ["Sign-up and authentication"],
+        "security": [],
         "request_body": openapi.Schema(
             type="object",
             properties={
@@ -66,6 +67,7 @@ SWAGGER_SCHEMAS = {
     "TokenRefreshView": {
         "operation_summary": "Refresh JW token",
         "tags": ["Sign-up and authentication"],
+        "security": [],
         "request_body": openapi.Schema(
             type="object",
             properties={
