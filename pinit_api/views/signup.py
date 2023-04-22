@@ -1,13 +1,13 @@
 from rest_framework import generics
-from ..serializers.authentication_serializers import UserSerializer
+from ..serializers.user_serializers import UserCreateSerializer
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
-from .signup_doc import SWAGGER_SCHEMAS
+from ..doc.signup_doc import SWAGGER_SCHEMAS
 
 
 class SignupView(generics.CreateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = UserCreateSerializer
 
     @swagger_auto_schema(**SWAGGER_SCHEMAS["SignupView"])
     def post(self, request):

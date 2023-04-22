@@ -14,7 +14,7 @@ from ..constants import (
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_INVALID_REFRESH_TOKEN,
 )
-from .authentication_doc import SWAGGER_SCHEMAS
+from ..doc.authentication_doc import SWAGGER_SCHEMAS
 
 
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):

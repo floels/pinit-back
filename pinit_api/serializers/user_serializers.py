@@ -11,7 +11,7 @@ from ..constants import (
 )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
         validators=[
@@ -46,6 +46,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("email", "password", "birthdate")
+        extra_kwargs = {
+            "password": {"write_only": True}
+        }
 
     def validate_password(self, value):
         try:
