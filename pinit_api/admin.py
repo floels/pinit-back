@@ -67,6 +67,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = (
         "email",
         "birthdate",
+        "username",
         "first_name",
         "last_name",
         "initial",
@@ -74,7 +75,7 @@ class UserAdmin(BaseUserAdmin):
     )
     list_filter = ("is_admin",)
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("email", "password", "username")}),
         (
             "Personal info",
             {"fields": ("birthdate", "first_name", "last_name", "initial")},
@@ -91,6 +92,7 @@ class UserAdmin(BaseUserAdmin):
                 "fields": (
                     "email",
                     "birthdate",
+                    "username",
                     "first_name",
                     "last_name",
                     "initial",

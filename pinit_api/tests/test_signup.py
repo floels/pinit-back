@@ -19,6 +19,26 @@ class SignupTests(TestCase):
             password=self.existing_user_password,
         )
 
+        # Existing users with "newuser", "newuser1" and "newuser2" user name
+        # (to test suffix incrementation in test_signup_happy_case):
+        User.objects.create_user(
+            email="username-newuser@example.com",
+            password=self.existing_user_password,
+            username="newuser",
+        )
+        User.objects.create_user(
+            email="username-newuser1@example.com",
+            password=self.existing_user_password,
+            username="newuser1",
+        )
+        User.objects.create_user(
+            email="username-newuser2@example.com",
+            password=self.existing_user_password,
+            username="newuser2",
+        )
+
+        self.number_existing_users = 4
+
     def test_signup_happy_case(self):
         data = {
             "email": "new.user@example.com",
@@ -36,11 +56,14 @@ class SignupTests(TestCase):
         assert bool(refresh_token)
 
         # Check user was created with correct attributes
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 1)
-        new_user = new_users[0]
+        self.assertEqual(User.objects.count(), self.number_existing_users + 1)
+        new_user = User.objects.get(email="new.user@example.com")
         self.assertEqual(new_user.email, "new.user@example.com")
         self.assertEqual(str(new_user.birthdate), "1970-01-01")
+        self.assertEqual(new_user.username, "newuser3")
+        self.assertEqual(new_user.initial, "N")
+        self.assertEqual(new_user.first_name, "New")
+        self.assertEqual(new_user.last_name, "User")
 
     def test_signup_invalid_email(self):
         data = {
@@ -57,8 +80,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
 
     def test_signup_blank_email(self):
         data = {
@@ -75,8 +97,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
 
     def test_signup_email_already_signed_up(self):
         data = {
@@ -93,8 +114,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
 
     def test_signup_invalid_password(self):
         data = {
@@ -111,8 +131,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
 
     def test_signup_blank_password(self):
         data = {
@@ -129,8 +148,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
 
     def test_signup_invalid_birthdate(self):
         data = {
@@ -147,8 +165,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
 
     def test_signup_blank_birthdate(self):
         data = {
@@ -165,5 +182,4 @@ class SignupTests(TestCase):
         )
 
         # Check no user was created
-        new_users = User.objects.exclude(email=self.existing_user_email)
-        self.assertEqual(new_users.count(), 0)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
