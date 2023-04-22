@@ -8,6 +8,7 @@ class UserManager(BaseUserManager):
         email,
         password=None,
         birthdate=None,
+        username=None,
         initial=None,
         first_name=None,
         last_name=None,
@@ -18,6 +19,7 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             birthdate=birthdate,
+            username=username,
             initial=initial,
             first_name=first_name,
             last_name=last_name,

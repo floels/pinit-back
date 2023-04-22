@@ -14,7 +14,7 @@ from ..utils.constants import (
 class UserReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "initial", "first_name", "last_name"]
+        fields = ["email", "username", "initial", "first_name", "last_name"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

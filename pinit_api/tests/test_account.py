@@ -11,6 +11,7 @@ class AccountTests(APITestCase):
         self.user = User.objects.create_user(
             email="john.doe@example.com",
             password="Pa$$wOrd",
+            username="johndoe",
             initial="J",
             first_name="John",
             last_name="Doe",
@@ -30,6 +31,7 @@ class AccountTests(APITestCase):
         response_data = response.json()
 
         self.assertEqual(response_data["email"], self.user.email)
+        self.assertEqual(response_data["username"], self.user.username)
         self.assertEqual(response_data["initial"], self.user.initial)
         self.assertEqual(response_data["first_name"], self.user.first_name)
         self.assertEqual(response_data["last_name"], self.user.last_name)

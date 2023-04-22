@@ -7,6 +7,7 @@ class User(AbstractBaseUser):
     # See https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#specifying-a-custom-user-model
     email = models.EmailField(unique=True)
     birthdate = models.DateField(null=True)
+    username = models.CharField(max_length=100, blank=True, null=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     initial = models.CharField(max_length=1, blank=True, null=True)
