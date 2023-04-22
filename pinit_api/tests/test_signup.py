@@ -42,6 +42,8 @@ class SignupTests(TestCase):
         self.assertEqual(new_user.email, "new.user@example.com")
         self.assertEqual(str(new_user.birthdate), "1970-01-01")
         self.assertEqual(new_user.initial, "N")
+        self.assertEqual(new_user.first_name, "New")
+        self.assertEqual(new_user.last_name, "User")
 
     def test_signup_invalid_email(self):
         data = {

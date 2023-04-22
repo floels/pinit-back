@@ -19,6 +19,24 @@ def get_initial_from_email(email):
     return match_letter_before_at.group(1).upper() if match_letter_before_at else "X"
 
 
+def get_first_last_name_from_email(email):
+    local_part = email.split("@")[0]
+
+    separators_pattern = r"[._-]"
+
+    name_parts = re.split(separators_pattern, local_part)
+
+    # Remove any non-alphabetical characters from the name parts
+    name_parts = ["".join(re.findall(r"[a-zA-Z]+", part)) for part in name_parts]
+
+    # Assume first name is in first place after splitting by separators,
+    # and last second in second place:
+    first_name = name_parts[0].capitalize() if len(name_parts) > 0 else ""
+    last_name = name_parts[1].capitalize() if len(name_parts) > 1 else ""
+
+    return first_name, last_name
+
+
 class UserReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -70,11 +88,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         email = validated_data["email"]
+        first_name, last_name = get_first_last_name_from_email(email)
 
         user = User.objects.create_user(
             email=email,
             password=validated_data["password"],
             birthdate=validated_data["birthdate"],
             initial=get_initial_from_email(email),
+            first_name=first_name,
+            last_name=last_name,
         )
         return user
