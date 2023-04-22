@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.core.exceptions import ValidationError
@@ -9,6 +10,13 @@ from ..utils.constants import (
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_INVALID_BIRTHDATE,
 )
+
+
+def get_initial_from_email(email):
+    match_letter_before_at = re.search(r"([a-zA-Z])[^@]*@", email)
+
+    # If no letter found before the '@', return "X" by default:
+    return match_letter_before_at.group(1).upper() if match_letter_before_at else "X"
 
 
 class UserReadSerializer(serializers.ModelSerializer):
@@ -52,7 +60,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("email", "password", "birthdate")
-        extra_kwargs = {"password": {"write_only": True}}
 
     def validate_password(self, value):
         try:
@@ -62,9 +69,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        email = validated_data["email"]
+
         user = User.objects.create_user(
-            email=validated_data["email"],
+            email=email,
             password=validated_data["password"],
             birthdate=validated_data["birthdate"],
+            initial=get_initial_from_email(email),
         )
         return user
