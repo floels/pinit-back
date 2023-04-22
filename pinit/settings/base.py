@@ -119,4 +119,17 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    "EXCEPTION_HANDLER": "pinit_api.utils.unauthorized_exception_handler.unauthorized_exception_handler",
+}
+
+# https://drf-yasg.readthedocs.io/en/stable/security.html#security-definitions
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "JWT token authentication. Format: 'Bearer {access_token}'",
+        }
+    }
 }

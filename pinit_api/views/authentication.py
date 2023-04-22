@@ -1,5 +1,3 @@
-from rest_framework import generics
-from ..serializers.authentication_serializers import UserSerializer
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as SimpleJWTTokenObtainPairView,
     TokenRefreshView as SimpleJWTTokenRefreshView,
@@ -9,12 +7,12 @@ from ..models import User
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
-from ..constants import (
+from ..utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_INVALID_REFRESH_TOKEN,
 )
-from .authentication_doc import SWAGGER_SCHEMAS
+from ..doc.authentication_doc import SWAGGER_SCHEMAS
 
 
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):

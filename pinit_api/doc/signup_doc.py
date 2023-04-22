@@ -5,6 +5,7 @@ SWAGGER_SCHEMAS = {
         "operation_summary": "Sign up",
         "operation_description": "Takes sign-up data and returns a pair of access and refresh token if sign-up was successful.",
         "tags": ["Sign-up and authentication"],
+        "security": [],
         "request_body": openapi.Schema(
             type="object",
             properties={

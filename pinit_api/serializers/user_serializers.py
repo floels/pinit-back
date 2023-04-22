@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from ..models import User
-from ..constants import (
+from ..utils.constants import (
     ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
@@ -11,7 +11,13 @@ from ..constants import (
 )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "initial", "first_name", "last_name"]
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
         validators=[
@@ -46,6 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("email", "password", "birthdate")
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate_password(self, value):
         try:
