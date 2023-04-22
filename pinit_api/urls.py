@@ -1,7 +1,7 @@
 from django.urls import path
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from .views import authentication, signup
+from .views import authentication, signup, account
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -25,4 +25,5 @@ urlpatterns = [
         authentication.TokenRefreshView.as_view(),
         name=("token_refresh"),
     ),
+    path("user-details/", account.get_user_details, name="user_details")
 ]

@@ -11,6 +11,12 @@ from ..constants import (
 )
 
 
+class UserReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "initial", "first_name", "last_name"]
+
+
 class UserCreateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,

@@ -1,5 +1,3 @@
-from rest_framework import generics
-from ..serializers.authentication_serializers import UserSerializer
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as SimpleJWTTokenObtainPairView,
     TokenRefreshView as SimpleJWTTokenRefreshView,
