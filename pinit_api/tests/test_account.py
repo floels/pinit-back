@@ -1,7 +1,10 @@
 from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+
 from ..models import User
+from ..utils.constants import ERROR_CODE_UNAUTHORIZED
+
 
 class AccountTests(APITestCase):
     def setUp(self):
@@ -10,15 +13,15 @@ class AccountTests(APITestCase):
             password="Pa$$wOrd",
             initial="J",
             first_name="John",
-            last_name="Doe"
+            last_name="Doe",
         )
 
-        self.client=APIClient()
+        self.client = APIClient()
 
     def test_user_details_happy_case(self):
         refresh = RefreshToken.for_user(self.user)
         access_token = str(refresh.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
         response = self.client.get("/api/user-details/")
 
@@ -35,3 +38,8 @@ class AccountTests(APITestCase):
         response = self.client.get("/api/user-details/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": ERROR_CODE_UNAUTHORIZED}],
+        )

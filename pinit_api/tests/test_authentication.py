@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from ..models import User
-from ..constants import (
+from ..utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_INVALID_REFRESH_TOKEN,
@@ -63,7 +63,9 @@ class AuthenticationTests(TestCase):
             "/api/token/", data_wrong_password, format="json"
         )
 
-        self.assertEqual(response_wrong_password.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response_wrong_password.status_code, status.HTTP_401_UNAUTHORIZED
+        )
         self.assertEqual(
             response_wrong_password.json()["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],

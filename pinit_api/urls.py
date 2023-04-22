@@ -32,5 +32,5 @@ urlpatterns = [
         authentication.TokenRefreshView.as_view(),
         name=("token_refresh"),
     ),
-    path("user-details/", account.get_user_details, name="user_details")
+    path("user-details/", account.get_user_details, name="user_details"),
 ]

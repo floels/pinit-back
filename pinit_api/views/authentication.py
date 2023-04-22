@@ -7,7 +7,7 @@ from ..models import User
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
-from ..constants import (
+from ..utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_INVALID_REFRESH_TOKEN,
