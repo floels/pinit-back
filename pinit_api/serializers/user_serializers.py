@@ -37,6 +37,17 @@ def get_first_last_name_from_email(email):
     return first_name, last_name
 
 
+def get_username_candidate_from_email(email):
+    local_part = email.split("@")[0]
+
+    alphabetic_characters = re.findall(r"[a-zA-Z]+", local_part)
+
+    username_candidate = "".join(alphabetic_characters).lower()
+
+    # Return "user" if no alphabetic characters were found in the email address:
+    return username_candidate if username_candidate else "user"
+
+
 class UserReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -88,14 +99,42 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         email = validated_data["email"]
+
         first_name, last_name = get_first_last_name_from_email(email)
+
+        username_candidate = get_username_candidate_from_email(email)
+
+        username = username_candidate
+
+        if User.objects.filter(username=username_candidate):
+            # We need to add a suffix to the username candidate
+            users_with_usernames_starting_with_candidate = User.objects.filter(
+                username__startswith=username_candidate
+            )
+
+            usernames_starting_with_candidate = [
+                user.username for user in users_with_usernames_starting_with_candidate
+            ]
+
+            # Starting from 1, we increment a suffix until the resulting username does not already exist
+            suffix = 1
+
+            while True:
+                username = f"{username_candidate}{suffix}"
+
+                if username not in usernames_starting_with_candidate:
+                    break
+
+                suffix += 1
 
         user = User.objects.create_user(
             email=email,
             password=validated_data["password"],
             birthdate=validated_data["birthdate"],
+            username=username,
             initial=get_initial_from_email(email),
             first_name=first_name,
             last_name=last_name,
         )
+
         return user
