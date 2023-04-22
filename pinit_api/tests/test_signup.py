@@ -1,4 +1,5 @@
 from django.test import TestCase
+from rest_framework import status
 from ..models import User
 from ..constants import (
     ERROR_CODE_INVALID_EMAIL,
@@ -27,7 +28,7 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", data, format="json")
 
         # Check response
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
         access_token = response_data["access"]
         assert bool(access_token)
@@ -49,7 +50,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_EMAIL}],
@@ -67,7 +68,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_EMAIL}],
@@ -85,7 +86,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_EMAIL_ALREADY_SIGNED_UP}],
@@ -103,7 +104,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],
@@ -121,7 +122,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],
@@ -139,7 +140,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_BIRTHDATE}],
@@ -157,7 +158,7 @@ class SignupTests(TestCase):
         }
         response = self.client.post("/api/signup/", data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_BIRTHDATE}],
