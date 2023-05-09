@@ -50,9 +50,9 @@ class SignupTests(TestCase):
         # Check response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
-        access_token = response_data["access"]
+        access_token = response_data["access_token"]
         assert bool(access_token)
-        refresh_token = response_data["refresh"]
+        refresh_token = response_data["refresh_token"]
         assert bool(refresh_token)
 
         # Check user was created with correct attributes
