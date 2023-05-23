@@ -74,11 +74,11 @@ class AuthenticationTests(TestCase):
     def test_refresh_token_wrong_refresh_token(self):
         response = self.client.post(
             "/api/token/refresh/",
-            {"refresh_token": "wrong.refreshToken"},
+            {"refresh_token": "wrong.refresh.token"},
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}],
