@@ -65,7 +65,7 @@ class TokenRefreshView(SimpleJWTTokenRefreshView):
         except TokenError:
             return JsonResponse(
                 {"errors": [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}]},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         access_token = serializer.validated_data["access"]
