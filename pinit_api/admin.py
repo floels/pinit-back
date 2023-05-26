@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 
-from .models import User
+from .models import User, Pin
 
 
 # https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#a-full-example
@@ -108,6 +108,9 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
+
+admin.site.register(Pin)
+
 # Since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 admin.site.unregister(Group)
