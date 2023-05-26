@@ -30,3 +30,11 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
+
+
+class Pin(models.Model):
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
+    image_url = models.URLField(max_length=200)
+    text = models.CharField(max_length=5000, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
