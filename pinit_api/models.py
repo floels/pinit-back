@@ -6,7 +6,7 @@ from .utils.user_manager import UserManager
 class User(AbstractBaseUser):
     # See https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#specifying-a-custom-user-model
     email = models.EmailField(unique=True)
-    birthdate = models.DateField(null=True)
+    birthdate = models.DateField(blank=True, null=True)
     username = models.CharField(max_length=100, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
@@ -36,5 +36,5 @@ class Pin(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(max_length=200)
-    text = models.CharField(max_length=5000, null=True, blank=True)
+    description = models.CharField(max_length=5000, null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
