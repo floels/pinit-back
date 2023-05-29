@@ -119,7 +119,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    "EXCEPTION_HANDLER": "pinit_api.utils.unauthorized_exception_handler.unauthorized_exception_handler",
+    "EXCEPTION_HANDLER": "pinit_api.utils.handle_unauthorized_exception",
 }
 
 # https://drf-yasg.readthedocs.io/en/stable/security.html#security-definitions

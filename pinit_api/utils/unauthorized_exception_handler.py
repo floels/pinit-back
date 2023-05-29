@@ -4,7 +4,7 @@ from rest_framework import status
 from .constants import ERROR_CODE_UNAUTHORIZED
 
 
-def unauthorized_exception_handler(exc, context):
+def handle_unauthorized_exception(exc, context):
     """
     Custom exception handler that returns JSON:API-formatted error
     response for 401 Unauthorized status codes.

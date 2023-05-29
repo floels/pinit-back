@@ -15,7 +15,7 @@ class AccountTests(APITestCase):
         )
 
         self.account = Account.objects.create(
-            username="john.doe",
+            username="johndoe",
             type="personal",
             first_name="John",
             last_name="Doe",
@@ -30,7 +30,7 @@ class AccountTests(APITestCase):
             password="Pa$$wOrd",
         )
         Account.objects.create(
-            username="jane.doe",
+            username="janedoe",
             type="personal",
             first_name="Jane",
             last_name="Doe",
@@ -59,7 +59,7 @@ class AccountTests(APITestCase):
 
         account_attributes = account["attributes"]
 
-        self.assertEqual(account_attributes["username"], "john.doe")
+        self.assertEqual(account_attributes["username"], "johndoe")
         self.assertEqual(account_attributes["type"], "personal")
         self.assertEqual(account_attributes["initial"], "J")
         self.assertEqual(account_attributes["display_name"], "John Doe")
