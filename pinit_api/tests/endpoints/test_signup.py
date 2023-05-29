@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
-from ..models import User, Account
-from ..utils.constants import (
+from pinit_api.models import User, Account
+from pinit_api.utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
     ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,

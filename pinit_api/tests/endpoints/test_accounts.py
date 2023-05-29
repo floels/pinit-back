@@ -3,8 +3,8 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework import status
 
-from ..models import User, Account
-from ..utils.constants import ERROR_CODE_UNAUTHORIZED
+from pinit_api.models import User, Account
+from pinit_api.utils.constants import ERROR_CODE_UNAUTHORIZED
 
 
 class AccountTests(APITestCase):

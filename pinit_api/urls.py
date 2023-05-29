@@ -24,7 +24,7 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger",
     ),
-    path("signup/", signup.SignupView.as_view(), name="signup"),
+    path("signup/", signup.sign_up, name="signup"),
     path("token/", authentication.TokenObtainPairView.as_view(), name="token_obtain"),
     path(
         "token/refresh/",
