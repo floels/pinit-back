@@ -9,7 +9,7 @@ from ..utils.constants import ERROR_CODE_UNAUTHORIZED
 
 class AccountTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.calling_user = User.objects.create_user(
             email="john.doe@example.com",
             password="Pa$$wOrd",
         )
@@ -20,13 +20,28 @@ class AccountTests(APITestCase):
             first_name="John",
             last_name="Doe",
             initial="J",
-            owner=self.user,
+            owner=self.calling_user,
+        )
+
+        # Create another user and account,
+        # to check that it won't be returned for the calling user set above
+        other_user = User.objects.create_user(
+            email="jane.doe@example.com",
+            password="Pa$$wOrd",
+        )
+        Account.objects.create(
+            username="jane.doe",
+            type="personal",
+            first_name="Jane",
+            last_name="Doe",
+            initial="J",
+            owner=other_user,
         )
 
         self.client = APIClient()
 
     def test_get_accounts_happy_case(self):
-        tokens_pair = RefreshToken.for_user(self.user)
+        tokens_pair = RefreshToken.for_user(self.calling_user)
         access_token = str(tokens_pair.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
@@ -62,7 +77,7 @@ class AccountTests(APITestCase):
 
     def test_get_accounts_expired_access_token(self):
         # Create expired token for the test user
-        access_token = AccessToken.for_user(self.user)
+        access_token = AccessToken.for_user(self.calling_user)
         access_token.set_exp(from_time=datetime.now() - timedelta(minutes=10))
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(access_token)}")

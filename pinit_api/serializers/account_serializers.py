@@ -5,6 +5,7 @@ from ..models import Account
 class AccountJSONApiReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
+        fields = "__all__"
 
     def to_representation(self, instance):
         return self.to_json_api_representation(instance)
@@ -23,7 +24,7 @@ class AccountJSONApiReadSerializer(serializers.ModelSerializer):
         representation["attributes"] = {
             "username": instance.username,
             "type": instance.type,
-            "display_name": self.compute_display_name(),
+            "display_name": self.compute_display_name(instance),
             "initial": instance.initial,
             "owner_email": instance.owner.email,
         }
