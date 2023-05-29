@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from ..models import Pin
 
+# TODO: refactor (ill-designed)
+
 
 class PinWithAuthorReadSerializer(serializers.ModelSerializer):
     relationships = serializers.SerializerMethodField()
@@ -26,12 +28,12 @@ class PinWithAuthorReadSerializer(serializers.ModelSerializer):
             }
         }
 
-    def get_included(self, obj):
+    def get_included(self, instance):
         return {
             "type": "user",
-            "id": obj.author.username,
+            "id": instance.author.username,
             "attributes": {
-                "first_name": obj.author.first_name,
-                "last_name": obj.author.last_name,
+                "first_name": instance.author.first_name,
+                "last_name": instance.author.last_name,
             },
         }

@@ -7,10 +7,6 @@ class User(AbstractBaseUser):
     # See https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#specifying-a-custom-user-model
     email = models.EmailField(unique=True)
     birthdate = models.DateField(blank=True, null=True)
-    username = models.CharField(max_length=100, blank=True, null=True, unique=True)
-    first_name = models.CharField(max_length=100, blank=True, null=True)
-    last_name = models.CharField(max_length=100, blank=True, null=True)
-    initial = models.CharField(max_length=1, blank=True, null=True)
     is_admin = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -32,9 +28,19 @@ class User(AbstractBaseUser):
         return self.is_admin
 
 
+class Account(models.Model):
+    username = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    type = models.CharField(max_length=50)  # "personal" or "business"
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    business_name = models.CharField(max_length=100, blank=True, null=True)
+    initial = models.CharField(max_length=1, blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
 class Pin(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(max_length=200)
-    description = models.CharField(max_length=5000, null=True, blank=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.TextField(null=True, blank=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE)

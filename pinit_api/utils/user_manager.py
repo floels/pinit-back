@@ -8,10 +8,6 @@ class UserManager(BaseUserManager):
         email,
         password=None,
         birthdate=None,
-        username=None,
-        initial=None,
-        first_name=None,
-        last_name=None,
     ):
         if not email:
             raise ValueError("Users must have an email address")
@@ -19,10 +15,6 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             birthdate=birthdate,
-            username=username,
-            initial=initial,
-            first_name=first_name,
-            last_name=last_name,
         )
 
         user.set_password(password)

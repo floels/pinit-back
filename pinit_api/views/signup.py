@@ -1,5 +1,5 @@
 from rest_framework import generics
-from ..serializers.user_serializers import UserCreateSerializer
+from ..serializers import UserCreateSerializer
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema

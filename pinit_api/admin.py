@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 
-from .models import User, Pin
+from .models import User, Account, Pin
 
 
 # https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#a-full-example
@@ -19,7 +19,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("email", "birthdate", "first_name", "last_name", "initial")
+        fields = ("email",)
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -48,10 +48,6 @@ class UserChangeForm(forms.ModelForm):
         fields = (
             "email",
             "password",
-            "birthdate",
-            "first_name",
-            "last_name",
-            "initial",
             "is_admin",
         )
 
@@ -67,19 +63,11 @@ class UserAdmin(BaseUserAdmin):
     list_display = (
         "email",
         "birthdate",
-        "username",
-        "first_name",
-        "last_name",
-        "initial",
         "is_admin",
     )
     list_filter = ("is_admin",)
     fieldsets = (
-        (None, {"fields": ("email", "password", "username")}),
-        (
-            "Personal info",
-            {"fields": ("birthdate", "first_name", "last_name", "initial")},
-        ),
+        (None, {"fields": ("email", "password")}),
         ("Permissions", {"fields": ("is_admin",)}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -91,11 +79,6 @@ class UserAdmin(BaseUserAdmin):
                 "classes": ("wide",),
                 "fields": (
                     "email",
-                    "birthdate",
-                    "username",
-                    "first_name",
-                    "last_name",
-                    "initial",
                     "password1",
                     "password2",
                 ),
@@ -108,7 +91,7 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
-
+admin.site.register(Account)
 admin.site.register(Pin)
 
 # Since we're not using Django's built-in permissions,
