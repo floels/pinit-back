@@ -29,7 +29,7 @@ SWAGGER_SCHEMAS = {
                                                 type="string",
                                                 description="Account's username",
                                             ),
-                                            "account_type": openapi.Schema(
+                                            "type": openapi.Schema(
                                                 type="string",
                                                 description="Type of account (personal / business)",
                                             ),

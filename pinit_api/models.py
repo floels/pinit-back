@@ -33,6 +33,7 @@ class Account(models.Model):
     type = models.CharField(max_length=50)  # "personal" or "business"
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
+    business_name = models.CharField(max_length=100, blank=True, null=True)
     initial = models.CharField(max_length=1, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 

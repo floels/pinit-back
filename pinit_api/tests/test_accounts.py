@@ -45,7 +45,7 @@ class AccountTests(APITestCase):
         account_attributes = account["attributes"]
 
         self.assertEqual(account_attributes["username"], "john.doe")
-        self.assertEqual(account_attributes["account_type"], "personal")
+        self.assertEqual(account_attributes["type"], "personal")
         self.assertEqual(account_attributes["initial"], "J")
         self.assertEqual(account_attributes["display_name"], "John Doe")
         self.assertEqual(account_attributes["owner_email"], "john.doe@example.com")
