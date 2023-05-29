@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework import status
 
-from ..models import User
+from ..models import User, Account
 from ..utils.constants import ERROR_CODE_UNAUTHORIZED
 
 
@@ -12,33 +12,46 @@ class AccountTests(APITestCase):
         self.user = User.objects.create_user(
             email="john.doe@example.com",
             password="Pa$$wOrd",
-            username="johndoe",
-            initial="J",
+        )
+
+        self.account = Account.objects.create(
+            username="john.doe",
+            type="personal",
             first_name="John",
             last_name="Doe",
+            initial="J",
+            owner=self.user,
         )
 
         self.client = APIClient()
 
-    def test_user_details_happy_case(self):
-        refresh = RefreshToken.for_user(self.user)
-        access_token = str(refresh.access_token)
+    def test_get_accounts_happy_case(self):
+        tokens_pair = RefreshToken.for_user(self.user)
+        access_token = str(tokens_pair.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
-        response = self.client.get("/api/user-details/")
+        response = self.client.get("/api/accounts/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response_data = response.json()
+        response_data = response.json()["data"]
 
-        self.assertEqual(response_data["email"], self.user.email)
-        self.assertEqual(response_data["username"], self.user.username)
-        self.assertEqual(response_data["initial"], self.user.initial)
-        self.assertEqual(response_data["first_name"], self.user.first_name)
-        self.assertEqual(response_data["last_name"], self.user.last_name)
+        self.assertEqual(len(response_data), 1)
 
-    def test_user_details_no_access_token(self):
-        response = self.client.get("/api/user-details/")
+        account = response_data[0]
+        self.assertEqual(account["type"], "accounts")
+        self.assertEqual(account["id"], self.account.username)
+
+        account_attributes = account["attributes"]
+
+        self.assertEqual(account_attributes["username"], "john.doe")
+        self.assertEqual(account_attributes["account_type"], "personal")
+        self.assertEqual(account_attributes["initial"], "J")
+        self.assertEqual(account_attributes["display_name"], "John Doe")
+        self.assertEqual(account_attributes["owner_email"], "john.doe@example.com")
+
+    def test_get_accounts_no_access_token(self):
+        response = self.client.get("/api/accounts/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -47,14 +60,14 @@ class AccountTests(APITestCase):
             [{"code": ERROR_CODE_UNAUTHORIZED}],
         )
 
-    def test_user_details_expired_access_token(self):
+    def test_get_accounts_expired_access_token(self):
         # Create expired token for the test user
         access_token = AccessToken.for_user(self.user)
         access_token.set_exp(from_time=datetime.now() - timedelta(minutes=10))
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(access_token)}")
 
-        response = self.client.get("/api/user-details/")
+        response = self.client.get("/api/accounts/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -63,10 +76,10 @@ class AccountTests(APITestCase):
             [{"code": ERROR_CODE_UNAUTHORIZED}],
         )
 
-    def test_user_details_invalid_access_token(self):
+    def test_get_accounts_invalid_access_token(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer invalid_token")
 
-        response = self.client.get("/api/user-details/")
+        response = self.client.get("/api/accounts/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
