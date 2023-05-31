@@ -2,7 +2,7 @@ from rest_framework import serializers
 from ..models import Account
 
 
-class AccountJSONApiReadSerializer(serializers.ModelSerializer):
+class AccountJsonApiReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = "__all__"

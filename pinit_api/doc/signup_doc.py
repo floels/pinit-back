@@ -3,7 +3,7 @@ from drf_yasg import openapi
 SWAGGER_SCHEMAS = {
     "SignupView": {
         "operation_summary": "Sign up",
-        "operation_description": "Takes sign-up data and returns a pair of access and refresh token if sign-up was successful.",
+        "operation_description": "Takes sign-up data, creates a new user and corresponding personal account, and returns a pair of access and refresh token if sign-up was successful.",
         "tags": ["Sign-up and authentication"],
         "security": [],
         "request_body": openapi.Schema(
