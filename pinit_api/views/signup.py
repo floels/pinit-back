@@ -2,7 +2,8 @@ from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
-from ..doc.signup_doc import SWAGGER_SCHEMAS
+
+from ..doc.doc_signup import SWAGGER_SCHEMAS
 from ..utils import (
     compute_username_candidate_from_email,
     compute_first_and_last_name_from_email,
@@ -66,7 +67,7 @@ def create_personal_account_for_user(user):
     )
 
 
-@swagger_auto_schema(method="post", **SWAGGER_SCHEMAS["SignupView"])
+@swagger_auto_schema(method="post", **SWAGGER_SCHEMAS["POST /signup/"])
 @api_view(["POST"])
 def sign_up(request):
     user_serializer = UserCreateSerializer(data=request.data)

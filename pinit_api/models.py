@@ -6,6 +6,7 @@ from .utils.user_manager import UserManager
 class User(AbstractBaseUser):
     # See https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#specifying-a-custom-user-model
     email = models.EmailField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     birthdate = models.DateField(blank=True, null=True)
     is_admin = models.BooleanField(default=False)
 
@@ -30,6 +31,7 @@ class User(AbstractBaseUser):
 
 class Account(models.Model):
     username = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=50)  # "personal" or "business"
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
@@ -40,6 +42,7 @@ class Account(models.Model):
 
 class Pin(models.Model):
     id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(max_length=200)
     description = models.TextField(null=True, blank=True)

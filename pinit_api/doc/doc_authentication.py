@@ -1,7 +1,7 @@
 from drf_yasg import openapi
 
 SWAGGER_SCHEMAS = {
-    "TokenObtainPairView": {
+    "POST /token/obtain/": {
         "operation_summary": "Obtain JW token",
         "operation_description": "Takes sign-in credentials and returns a pair of access and refresh token if credentials are valid.",
         "tags": ["Sign-up and authentication"],
@@ -64,7 +64,7 @@ SWAGGER_SCHEMAS = {
             ),
         },
     },
-    "TokenRefreshView": {
+    "POST /token/refresh/": {
         "operation_summary": "Refresh JW token",
         "tags": ["Sign-up and authentication"],
         "security": [],

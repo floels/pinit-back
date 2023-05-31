@@ -4,14 +4,14 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
 from ..models import Account
-from ..doc.accounts_doc import SWAGGER_SCHEMAS
-from ..serializers import AccountJsonApiReadSerializer
+from ..doc.doc_accounts import SWAGGER_SCHEMAS
+from ..serializers import AccountWithOwnerEmailReadSerializer
 
 
-@swagger_auto_schema(**SWAGGER_SCHEMAS["GetAccountsView"])
+@swagger_auto_schema(**SWAGGER_SCHEMAS["GET /accounts/"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_accounts(request):
     accounts = Account.objects.select_related("owner").filter(owner=request.user)
-    serialized_accounts = AccountJsonApiReadSerializer(accounts, many=True)
-    return Response({"data": serialized_accounts.data})
+    serialized_accounts = AccountWithOwnerEmailReadSerializer(accounts, many=True)
+    return Response({"results": serialized_accounts.data})
