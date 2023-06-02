@@ -14,11 +14,11 @@ from ..utils.constants import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
 )
-from ..doc.authentication_doc import SWAGGER_SCHEMAS
+from ..doc.doc_authentication import SWAGGER_SCHEMAS
 
 
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):
-    @swagger_auto_schema(**SWAGGER_SCHEMAS["TokenObtainPairView"])
+    @swagger_auto_schema(**SWAGGER_SCHEMAS["POST /token/obtain/"])
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -48,7 +48,7 @@ class TokenObtainPairView(SimpleJWTTokenObtainPairView):
 
 
 class TokenRefreshView(SimpleJWTTokenRefreshView):
-    @swagger_auto_schema(**SWAGGER_SCHEMAS["TokenRefreshView"])
+    @swagger_auto_schema(**SWAGGER_SCHEMAS["POST /token/refresh/"])
     def post(self, request):
         if "refresh_token" not in request.data:
             return JsonResponse(
