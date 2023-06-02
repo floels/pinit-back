@@ -20,17 +20,16 @@ class PinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         self.authenticate_client(self.calling_user)
 
     def test_get_pin_suggestions_happy_case(self):
-        response = self.client.get("/pin-suggestions")
+        response = self.client.get("/api/pin-suggestions/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
-        # Check "data" object of response
-        self.assertEqual(len(response_data["results"]), NUMBER_EXISTING_PINS)
+        self.assertEqual(len(response_data), NUMBER_EXISTING_PINS)
 
-        first_result = response_data["results"][0]
-        self.check_first_result_happy_case()
+        first_result = response_data[0]
+        self.check_first_result_happy_case(first_result)
 
     def check_first_result_happy_case(self, first_result):
         self.assertEqual(first_result["id"], self.most_recent_pin.id)

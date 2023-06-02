@@ -42,11 +42,11 @@ class AccountTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        results = response.json()["results"]
+        response_data = response.json()
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(response_data), 1)
 
-        account = results[0]
+        account = response_data[0]
 
         self.assertEqual(account["username"], "johndoe")
         self.assertEqual(account["type"], "personal")

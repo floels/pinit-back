@@ -5,7 +5,6 @@ SWAGGER_SCHEMAS = {
         "operation_summary": "Get all pins",
         "operation_description": "**Requires authentication.** Returns all pins in database, sorted by decreasing creation date, along with information on the author account.",
         "tags": ["Pins"],
-        "method": "get",
         "security": [{"Bearer": []}],
     }
 }

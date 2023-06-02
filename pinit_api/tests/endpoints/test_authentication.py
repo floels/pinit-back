@@ -26,7 +26,7 @@ class AuthenticationTests(TestCase):
             "email": self.existing_user_email,
             "password": self.existing_user_password,
         }
-        response_obtain = self.client.post("/api/token/", data, format="json")
+        response_obtain = self.client.post("/api/token/obtain/", data, format="json")
 
         self.assertEqual(response_obtain.status_code, status.HTTP_200_OK)
         response_obtain_data = response_obtain.json()
@@ -46,7 +46,7 @@ class AuthenticationTests(TestCase):
     def test_obtain_token_wrong_credentials(self):
         data_wrong_email = {"email": "wrong_email", "password": "somePa$$word"}
         response_wrong_email = self.client.post(
-            "/api/token/", data_wrong_email, format="json"
+            "/api/token/obtain/", data_wrong_email, format="json"
         )
 
         self.assertEqual(response_wrong_email.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -60,7 +60,7 @@ class AuthenticationTests(TestCase):
             "password": "somePa$$word",
         }
         response_wrong_password = self.client.post(
-            "/api/token/", data_wrong_password, format="json"
+            "/api/token/obtain/", data_wrong_password, format="json"
         )
 
         self.assertEqual(

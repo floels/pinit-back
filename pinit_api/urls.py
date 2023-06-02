@@ -38,7 +38,7 @@ urlpatterns = [
     path("accounts/", accounts.get_accounts, name="get_acounts"),
     path(
         "pin-suggestions/",
-        pin_suggestions.get_pin_suggestions,
+        pin_suggestions.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
 ]
