@@ -6,10 +6,7 @@ class AccountBaseSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
 
     def get_display_name(self, obj):
-        if obj.type == "personal":
-            return f"{obj.first_name} {obj.last_name}"
-
-        return obj.business_name
+        return obj.get_display_name()
 
 
 class AccountWithOwnerEmailReadSerializer(AccountBaseSerializer):
