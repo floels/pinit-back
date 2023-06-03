@@ -16,9 +16,12 @@ class Pagination(PageNumberPagination):
     page_size = PAGE_SIZE
 
 
-@swagger_auto_schema(**SWAGGER_SCHEMAS["GET /pin-suggestions/"])
 class GetPinSuggestionsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Pin.objects.all().order_by("-created_at")
     serializer_class = PinWithAuthorReadSerializer
     pagination_class = Pagination
+
+    @swagger_auto_schema(**SWAGGER_SCHEMAS["GET /pin-suggestions/"])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
