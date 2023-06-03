@@ -18,7 +18,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "html_file_path", type=str, help="Path to the input HTML file"
+            "html_file_path",
+            type=str,
+            help="Path to the input HTML file (Pinterest homepage)",
         )
 
     def handle(self, *args, **options):
@@ -48,23 +50,32 @@ class Command(BaseCommand):
         return soup.find_all("div", {"data-test-id": "pin"})
 
     def create_pin_instances_from_pin_divs(self, pin_divs, max_number_pins_to_create):
-        for index, pin_div in enumerate(pin_divs):
-            if index >= max_number_pins_to_create:
-                break
+        number_pins_created = 0
 
-            pin = self.get_pin_instance_from_pin_div(pin_div)
-            pin.save()
+        for pin_div in pin_divs:
+            if number_pins_created <= max_number_pins_to_create:
+                try:
+                    pin = self.get_pin_instance_from_pin_div(pin_div)
+                    pin.save()
+                    number_pins_created += 1
+                except:
+                    pass
 
     def get_pin_instance_from_pin_div(self, pin_div):
-        # Extract image URL
         image_div = pin_div.find("div", {"data-test-id": "non-story-pin-image"})
         image_url = image_div.find("img")["src"]
 
-        # Extract pin description
-        title_a = pin_div.find("a", {"class": "Wk9 xQ4 CCY S9z DUt iyn kVc agv LIa"})
-        title = title_a.text.strip()
-        if title == "":
-            title = None
+        title = None
+
+        title_container = pin_div.find(
+            "div", {"data-test-id": "pointer-events-wrapper"}
+        )
+        if title_container:
+            title_a = title_container.find(
+                "a", {"class": "Wk9 xQ4 CCY S9z DUt iyn kVc agv LIa"}
+            )
+            if title_a and title_a.text:
+                title = title_a.text.strip()
 
         author = AccountFactory.create()
 
