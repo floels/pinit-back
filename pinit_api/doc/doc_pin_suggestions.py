@@ -6,5 +6,13 @@ SWAGGER_SCHEMAS = {
         "operation_description": "**Requires authentication.** Returns all pins in database, sorted by decreasing creation date, along with information on the author account.",
         "tags": ["Pins"],
         "security": [{"Bearer": []}],
+        "responses": {
+            200: openapi.Response(
+                description="Successful response",
+                schema=openapi.Schema(
+                    type="object",
+                ),
+            )
+        },
     }
 }
