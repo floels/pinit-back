@@ -29,8 +29,12 @@ jobs:
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
-          python manage.py test
+          coverage run manage.py test
+          coverage xml
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v3
