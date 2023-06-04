@@ -1,9 +1,3 @@
-"""
-A script to import all pins found in the HTML file `pinterest.html` (= source code of Pinterest.com homepage).
-The `pinterest.html` should be saved in the same folder as this file.
-The script will parse the HTML code with BeautifulSoup and create the corresponding instances in the database.
-"""
-
 from bs4 import BeautifulSoup
 from django.core.management import BaseCommand
 from pinit_api.models import Pin
