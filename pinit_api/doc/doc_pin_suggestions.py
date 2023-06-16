@@ -34,6 +34,22 @@ SUCCESSFUL_RESPONSE_SCHEMA = openapi.Response(
             ),
         },
     ),
+    examples={
+        "application/json": {
+            "count": 100,
+            "next": "http://base.url/api/pin-suggestions/?page=3",
+            "previous": "http://base.url/api/pin-suggestions/?page=1",
+            "results": [
+                {
+                    "id": 1,
+                    "image_url": "http://example.com/media/images/pin1.png",
+                    "title": "Pin 1",
+                    "description": "This is pin 1",
+                    "author": {"username": "johndoe", "display_name": "John Doe"},
+                },
+            ],
+        }
+    },
 )
 
 UNAUTHORIZED_RESPONSE_SCHEMA = openapi.Response(
@@ -64,8 +80,8 @@ UNAUTHORIZED_RESPONSE_SCHEMA = openapi.Response(
 
 SWAGGER_SCHEMAS = {
     "GET /pin-suggestions/": {
-        "operation_summary": "Get all pins",
-        "operation_description": "**Requires authentication.** Returns all pins in database, sorted by decreasing creation date, along with information on the author account.",
+        "operation_summary": "Get pin suggestions",
+        "operation_description": "**Requires authentication.** Returns pin suggestions for the user (current implementation: returns all pins in database, sorted by decreasing creation date).",
         "tags": ["Pins"],
         "security": [{"Bearer": []}],
         "responses": {
@@ -73,9 +89,14 @@ SWAGGER_SCHEMAS = {
             401: UNAUTHORIZED_RESPONSE_SCHEMA,
         },
         "parameters": [
+            # Known issue: this won't be displayed properly in the Redoc documentation
             openapi.Parameter(
-                "page", in_="query", description="Page number", type="integer"
-            ),
+                name="page",
+                in_="query",
+                description="Page number",
+                type="integer",
+                required=False,
+            )
         ],
     }
 }
