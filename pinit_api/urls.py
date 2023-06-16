@@ -35,7 +35,7 @@ urlpatterns = [
         authentication.TokenRefreshView.as_view(),
         name=("refresh_token"),
     ),
-    path("accounts/", accounts.get_accounts, name="get_acounts"),
+    path("accounts/", accounts.get_accounts, name="get_accounts"),
     path(
         "pin-suggestions/",
         pin_suggestions.GetPinSuggestionsView.as_view(),
