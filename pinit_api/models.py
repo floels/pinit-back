@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .utils.user_manager import UserManager
@@ -50,12 +51,28 @@ class Account(models.Model):
 
 
 class Pin(models.Model):
-    id = models.AutoField(primary_key=True)
+    unique_id = models.BigIntegerField(unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(max_length=200)
     description = models.TextField(null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE)
 
+    def save(self, *args, **kwargs):
+        if not self.unique_id:
+            self.unique_id = self.generate_unique_id()
+        super(Pin, self).save(*args, **kwargs)
+
+    @staticmethod
+    def generate_unique_id():
+        while True:
+            # Generate a random 18-digit number:
+            tentative_unique_id = random.randint(
+                100_000_000_000_000_000, 999_999_999_999_999_999
+            )
+
+            if not Pin.objects.filter(unique_id=tentative_unique_id).exists():
+                return tentative_unique_id
+
     def __str__(self):
-        return f"Pin {self.id} by {self.author.username}"
+        return f"Pin {self.unique_id} by {self.author.username}"

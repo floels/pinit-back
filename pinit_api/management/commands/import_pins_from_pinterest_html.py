@@ -1,14 +1,15 @@
 from bs4 import BeautifulSoup
 from django.core.management import BaseCommand
+from django.db import transaction
 from pinit_api.models import Pin
 from pinit_api.tests.testing_utils import AccountFactory
 
 
-DEFAULT_MAX_NUMBER_PINS_TO_CREATE = 300
+DEFAULT_MAX_NUMBER_PINS_TO_CREATE = 1000
 
 
 class Command(BaseCommand):
-    help = "Import all pins found in the HTML file `pinterest.html`"
+    help = "Import all pins found in the HTML file `pinterest.html`. Example of call: 'python manage.py import_pins_from_pinterest_html /absolute/path/to/pinterest.html'"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -41,7 +42,7 @@ class Command(BaseCommand):
 
         soup = BeautifulSoup(html, "html.parser")
 
-        return soup.find_all("div", {"data-test-id": "pin"})
+        return soup.find_all("div", {"class": "zI7 iyn Hsu"})
 
     def create_pin_instances_from_pin_divs(self, pin_divs, max_number_pins_to_create):
         number_pins_created = 0
@@ -49,15 +50,18 @@ class Command(BaseCommand):
         for pin_div in pin_divs:
             if number_pins_created <= max_number_pins_to_create:
                 try:
-                    pin = self.get_pin_instance_from_pin_div(pin_div)
-                    pin.save()
+                    with transaction.atomic():
+                        author = AccountFactory.create()
+                        pin = self.get_pin_instance_from_pin_div(pin_div, author)
+                        pin.save()
+                    print(f"Successfully saved new pin with ID {pin.unique_id}")
                     number_pins_created += 1
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error creating pin from dive: {e}")
 
-    def get_pin_instance_from_pin_div(self, pin_div):
-        image_div = pin_div.find("div", {"data-test-id": "non-story-pin-image"})
-        image_url = image_div.find("img")["src"]
+    def get_pin_instance_from_pin_div(self, pin_div, author):
+        img_tag = pin_div.find("img")
+        image_url = img_tag["src"] if img_tag else None
 
         title = None
 
@@ -70,7 +74,5 @@ class Command(BaseCommand):
             )
             if title_a and title_a.text:
                 title = title_a.text.strip()
-
-        author = AccountFactory.create()
 
         return Pin(image_url=image_url, title=title, author=author)
