@@ -20,7 +20,7 @@ class SignupTests(TestCase):
         )
 
         # Existing users with "newuser", "newuser1" and "newuser2" user name
-        # (to test suffix incrementation logic in test_signup_happy_case):
+        # (to test suffix incrementation logic):
         Account.objects.create(
             username="newuser", type="personal", owner=self.existing_user
         )
@@ -32,7 +32,7 @@ class SignupTests(TestCase):
         )
         self.number_existing_accounts = Account.objects.count()
 
-    def test_signup_happy_case(self):
+    def test_signup_happy_path(self):
         data = {
             "email": "new.user@example.com",
             "password": "Pa$$w0rd_new_user",
