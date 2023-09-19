@@ -40,7 +40,8 @@ class Account(models.Model):
     initial = models.CharField(max_length=1, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    def get_display_name(self):
+    @property
+    def display_name(self):
         if self.type == "personal":
             return f"{self.first_name} {self.last_name}"
 

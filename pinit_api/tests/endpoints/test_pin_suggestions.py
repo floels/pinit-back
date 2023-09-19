@@ -56,4 +56,4 @@ class PinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         )
         author_data = first_response_item["author"]
         self.assertEqual(author_data["username"], pin.author.username)
-        self.assertEqual(author_data["display_name"], pin.author.get_display_name())
+        self.assertEqual(author_data["display_name"], pin.author.display_name)
