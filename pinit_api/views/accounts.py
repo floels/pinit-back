@@ -13,5 +13,9 @@ from ..serializers import AccountWithOwnerEmailReadSerializer
 @permission_classes([IsAuthenticated])
 def get_accounts(request):
     accounts = Account.objects.select_related("owner").filter(owner=request.user)
+
     serialized_accounts = AccountWithOwnerEmailReadSerializer(accounts, many=True)
-    return Response(serialized_accounts.data)
+
+    response_data = {"results": serialized_accounts.data}
+
+    return Response(response_data)

@@ -14,15 +14,16 @@ class AccountTests(APITestCase):
         self.test_user = self.test_account.owner
 
         # Create another user and account,
-        # to check that it won't be returned for the calling user set above
+        # to check that it won't be returned for the calling user set above:
         _ = AccountFactory.create()
 
         self.client = APIClient()
 
     def tearDown(self):
-        self.client.credentials()  # Clear headers, as they are preserved between tests
+        # Clear authentication headers, as they are preserved between tests:
+        self.client.credentials()
 
-    def test_get_accounts_happy_case(self):
+    def test_get_accounts_happy_path(self):
         tokens_pair = RefreshToken.for_user(self.test_user)
         access_token = str(tokens_pair.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
@@ -33,9 +34,11 @@ class AccountTests(APITestCase):
 
         response_data = response.json()
 
-        self.assertEqual(len(response_data), 1)
+        response_results = response_data["results"]
 
-        account = response_data[0]
+        self.assertEqual(len(response_results), 1)
+
+        account = response_results[0]
 
         self.assertEqual(account["username"], self.test_account.username)
         self.assertEqual(account["type"], self.test_account.type)
