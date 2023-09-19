@@ -20,7 +20,7 @@ class AccountTests(APITestCase):
         self.client = APIClient()
 
     def tearDown(self):
-        # Clear authentication headers, as they are preserved between tests:
+        # Clear authentication headers:
         self.client.credentials()
 
     def test_get_accounts_happy_path(self):
