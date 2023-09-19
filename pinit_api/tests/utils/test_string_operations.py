@@ -27,7 +27,7 @@ class TestComputeUsernameCandidateFromEmail(TestCase):
 
 
 class TestComputeFirstAndLastNameFromEmail(TestCase):
-    def test_compute_first_and_last_name_from_email_happy_case(self):
+    def test_compute_first_and_last_name_from_email_happy_path(self):
         email = "john.doe23@example.com"
         (
             computed_first_name,

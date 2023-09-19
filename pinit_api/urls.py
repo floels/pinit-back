@@ -2,7 +2,7 @@ from django.urls import path
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from .views import authentication, signup, accounts, pin_suggestions
+from .views import authentication, signup, accounts, pin_suggestions, search
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -22,7 +22,7 @@ urlpatterns = [
     path(
         "swagger/",
         schema_view.with_ui("swagger", cache_timeout=0),
-        name="schema-swagger",
+        name="schema-swagger-ui",
     ),
     path("signup/", signup.sign_up, name="sign_up"),
     path(
@@ -41,4 +41,5 @@ urlpatterns = [
         pin_suggestions.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
+    path("search/autocomplete/", search.autcomplete_search, name="search_autocomplete"),
 ]

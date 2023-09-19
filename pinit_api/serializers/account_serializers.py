@@ -6,7 +6,7 @@ class AccountBaseSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
 
     def get_display_name(self, obj):
-        return obj.get_display_name()
+        return obj.display_name
 
 
 class AccountWithOwnerEmailReadSerializer(AccountBaseSerializer):

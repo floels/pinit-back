@@ -18,7 +18,7 @@ class AuthenticationTests(TestCase):
             password=self.existing_user_password,
         )
 
-    def test_obtain_and_refresh_token_happy_case(self):
+    def test_obtain_and_refresh_token_happy_path(self):
         """
         Ensure we can obtain and refresh a JWT when providing valid credentials.
         """

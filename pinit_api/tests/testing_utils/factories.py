@@ -9,7 +9,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = User
 
     class Params:
-        # And optional random_sequence that can be passed by the AccountFactory below,
+        # An optional random_sequence that can be passed by the AccountFactory below,
         # to create consistency between the account's username and its owner's email address
         random_sequence = None
 
