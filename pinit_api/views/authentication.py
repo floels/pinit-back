@@ -12,10 +12,11 @@ from ..models import User
 from ..utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
-    ERROR_CODE_INVALID_REFRESH_TOKEN,
-    ERROR_CODE_MISSING_REFRESH_TOKEN,
 )
 from ..doc.doc_authentication import SWAGGER_SCHEMAS
+
+ERROR_CODE_INVALID_REFRESH_TOKEN = "invalid_refresh_token"
+ERROR_CODE_MISSING_REFRESH_TOKEN = "missing_refresh_token"
 
 
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):

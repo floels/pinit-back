@@ -4,6 +4,8 @@ from pinit_api.models import User, Account
 from pinit_api.utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
+)
+from pinit_api.serializers.user_serializers import (
     ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
     ERROR_CODE_INVALID_BIRTHDATE,
 )

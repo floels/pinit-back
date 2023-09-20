@@ -4,7 +4,10 @@ from pinit_api.models import User
 from pinit_api.utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
+)
+from pinit_api.views.authentication import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
+    ERROR_CODE_MISSING_REFRESH_TOKEN,
 )
 
 
@@ -19,9 +22,6 @@ class AuthenticationTests(TestCase):
         )
 
     def test_obtain_and_refresh_token_happy_path(self):
-        """
-        Ensure we can obtain and refresh a JWT when providing valid credentials.
-        """
         data = {
             "email": self.existing_user_email,
             "password": self.existing_user_password,
@@ -82,4 +82,16 @@ class AuthenticationTests(TestCase):
         self.assertEqual(
             response.json()["errors"],
             [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}],
+        )
+
+    def test_refresh_token_missing_refresh_token(self):
+        response = self.client.post(
+            "/api/token/refresh/",
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}],
         )
