@@ -4,11 +4,12 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from ..models import User
 from ..utils.constants import (
-    ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
-    ERROR_CODE_INVALID_BIRTHDATE,
 )
+
+ERROR_CODE_INVALID_BIRTHDATE = "invalid_birthdate"
+ERROR_CODE_EMAIL_ALREADY_SIGNED_UP = "email_already_signed_up"
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

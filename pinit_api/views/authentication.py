@@ -4,17 +4,19 @@ from rest_framework_simplejwt.views import (
 )
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
-from ..models import User
-from django.http import JsonResponse
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
+
+from ..models import User
 from ..utils.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
-    ERROR_CODE_INVALID_REFRESH_TOKEN,
-    ERROR_CODE_MISSING_REFRESH_TOKEN,
 )
 from ..doc.doc_authentication import SWAGGER_SCHEMAS
+
+ERROR_CODE_INVALID_REFRESH_TOKEN = "invalid_refresh_token"
+ERROR_CODE_MISSING_REFRESH_TOKEN = "missing_refresh_token"
 
 
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):
@@ -26,20 +28,20 @@ class TokenObtainPairView(SimpleJWTTokenObtainPairView):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return JsonResponse(
+            return Response(
                 {"errors": [{"code": ERROR_CODE_INVALID_EMAIL}]},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         if not user.check_password(password):
-            return JsonResponse(
+            return Response(
                 {"errors": [{"code": ERROR_CODE_INVALID_PASSWORD}]},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         refresh_token = RefreshToken.for_user(user)
 
-        return JsonResponse(
+        return Response(
             {
                 "access_token": str(refresh_token.access_token),
                 "refresh_token": str(refresh_token),
@@ -51,7 +53,7 @@ class TokenRefreshView(SimpleJWTTokenRefreshView):
     @swagger_auto_schema(**SWAGGER_SCHEMAS["POST /token/refresh/"])
     def post(self, request):
         if "refresh_token" not in request.data:
-            return JsonResponse(
+            return Response(
                 {"errors": [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -63,11 +65,11 @@ class TokenRefreshView(SimpleJWTTokenRefreshView):
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError:
-            return JsonResponse(
+            return Response(
                 {"errors": [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}]},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         access_token = serializer.validated_data["access"]
 
-        return JsonResponse({"access_token": access_token}, status=status.HTTP_200_OK)
+        return Response({"access_token": access_token}, status=status.HTTP_200_OK)
