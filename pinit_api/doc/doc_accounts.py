@@ -5,7 +5,7 @@ from ..serializers import AccountWithOwnerEmailReadSerializer
 
 SWAGGER_SCHEMAS = {
     "accounts/": {
-        "operation_id": "Get accounts",
+        "operation_id": "accounts/",
         "description": "Get all accounts owned by the user.",
         "tags": ["Accounts"],
         "responses": {

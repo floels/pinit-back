@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
+from drf_spectacular.utils import extend_schema
 
 from ..models import Pin
 from ..serializers import PinWithAuthorReadSerializer
@@ -20,5 +21,6 @@ class GetPinSuggestionsView(ListAPIView):
     serializer_class = PinWithAuthorReadSerializer
     pagination_class = Pagination
 
+    @extend_schema(operation_id="pin-suggestions/", tags=["Pins"])
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
