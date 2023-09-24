@@ -1,29 +1,14 @@
 from django.urls import path
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from .views import authentication, signup, accounts, pin_suggestions, search
 
-schema_view = get_schema_view(
-    openapi.Info(
-        title="PinIt API",
-        default_version="v1",
-        license=openapi.License(name="Apache 2.0"),
-    ),
-    public=True,
-)
-
 urlpatterns = [
-    path(
-        "redoc/",
-        schema_view.with_ui("redoc", cache_timeout=0),
-        name="schema-redoc",
-    ),
-    path(
-        "swagger/",
-        schema_view.with_ui("swagger", cache_timeout=0),
-        name="schema-swagger-ui",
-    ),
+    # API documentation
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    
     path("signup/", signup.sign_up, name="sign_up"),
     path(
         "token/obtain/",
