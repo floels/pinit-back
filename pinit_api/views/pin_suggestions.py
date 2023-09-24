@@ -21,6 +21,6 @@ class GetPinSuggestionsView(ListAPIView):
     serializer_class = PinWithAuthorReadSerializer
     pagination_class = Pagination
 
-    @extend_schema(operation_id="pin-suggestions/", tags=["Pins"])
+    @extend_schema(operation_id="pin-suggestions/", tags=["Pins"], description="Returns a list of pin suggestions for the user.")
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
