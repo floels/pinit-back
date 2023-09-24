@@ -10,7 +10,7 @@ SWAGGER_SCHEMAS = {
         "tags": ["Accounts"],
         "responses": {
             200: inline_serializer(
-                name="SuccessResponse",
+                name="AccountsSuccessResponse",
                 fields={
                     "results": AccountWithOwnerEmailReadSerializer(many=True)
                 }
