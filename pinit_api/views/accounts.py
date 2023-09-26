@@ -1,14 +1,14 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
+
 
 from ..models import Account
-from ..doc.doc_accounts import SWAGGER_SCHEMAS
 from ..serializers import AccountWithOwnerEmailReadSerializer
+from ..doc.doc_accounts import SWAGGER_SCHEMAS
 
-
-@swagger_auto_schema(**SWAGGER_SCHEMAS["GET /accounts/"])
+@extend_schema(**SWAGGER_SCHEMAS["accounts/"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_accounts(request):

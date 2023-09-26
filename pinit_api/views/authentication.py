@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 
 from ..models import User
 from ..utils.constants import (
@@ -20,7 +20,7 @@ ERROR_CODE_MISSING_REFRESH_TOKEN = "missing_refresh_token"
 
 
 class TokenObtainPairView(SimpleJWTTokenObtainPairView):
-    @swagger_auto_schema(**SWAGGER_SCHEMAS["POST /token/obtain/"])
+    @extend_schema(**SWAGGER_SCHEMAS["token/obtain/"])
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -50,7 +50,7 @@ class TokenObtainPairView(SimpleJWTTokenObtainPairView):
 
 
 class TokenRefreshView(SimpleJWTTokenRefreshView):
-    @swagger_auto_schema(**SWAGGER_SCHEMAS["POST /token/refresh/"])
+    @extend_schema(**SWAGGER_SCHEMAS["token/refresh/"])
     def post(self, request):
         if "refresh_token" not in request.data:
             return Response(
