@@ -14,7 +14,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         random_sequence = None
 
     email = factory.LazyAttribute(
-        lambda o: f"user_{o.random_sequence if o.random_sequence else '%06d' % random.randint(0, 999999)}@example.com"
+        lambda o: f"user_{o.random_sequence if o.random_sequence else '%06d' % random.randint(0, 99999999)}@example.com"
     )
     birthdate = date(1990, 1, 1)
     is_admin = False
@@ -26,7 +26,7 @@ class AccountFactory(factory.django.DjangoModelFactory):
 
     class Params:
         random_sequence = factory.LazyAttribute(
-            lambda _: "%06d" % random.randint(0, 999999)
+            lambda _: "%06d" % random.randint(0, 99999999)
         )
 
     username = factory.LazyAttribute(lambda o: f"user_{o.random_sequence}")
