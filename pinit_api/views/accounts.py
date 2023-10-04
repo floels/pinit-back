@@ -8,6 +8,7 @@ from ..models import Account
 from ..serializers import AccountWithOwnerEmailReadSerializer
 from ..doc.doc_accounts import SWAGGER_SCHEMAS
 
+
 @extend_schema(**SWAGGER_SCHEMAS["accounts/"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
