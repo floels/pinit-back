@@ -6,8 +6,6 @@ name = "pypi"
 [packages]
 asgiref = "==3.7.2"
 attrs = "==23.1.0"
-beautifulsoup4 = "==4.12.2"
-bs4 = "==0.0.1"
 certifi = "==2023.7.22"
 charset-normalizer = "==3.2.0"
 click = "==8.1.7"
@@ -50,6 +48,7 @@ tomli = "==2.0.1"
 typing-extensions = "==4.8.0"
 uritemplate = "==4.1.1"
 urllib3 = "==2.0.5"
+psycopg2-binary = "*"
 
 [dev-packages]
 
