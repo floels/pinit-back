@@ -43,6 +43,7 @@ class PinFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pin
 
-    title = factory.Faker("sentence", nb_words=5)
+    title = factory.Faker("sentence", nb_words=5, variable_nb_words=True)
+    description = factory.Faker("text")
     image_url = factory.Faker("image_url")
     author = factory.SubFactory(AccountFactory)

@@ -4,7 +4,7 @@ import json
 from django.conf import settings
 from django.core.management import BaseCommand
 from pinit_api.models import Pin
-from pinit_api.tests.testing_utils import AccountFactory
+from pinit_api.tests.testing_utils import PinFactory
 from faker import Faker
 
 
@@ -25,12 +25,8 @@ class Command(BaseCommand):
             unique_image_urls = json.load(unique_image_urls_file)
 
             while Pin.objects.count() < 10000:
-                author = AccountFactory.create()
-                Pin.objects.create(
-                    title=fake.sentence(nb_words=6, variable_nb_words=True),
-                    description=fake.text(),
+                PinFactory.create(
                     image_url=random.choice(unique_image_urls),
-                    author=author,
                 )
 
         self.stdout.write(self.style.SUCCESS("Successfully created pins"))
