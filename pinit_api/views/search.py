@@ -12,6 +12,7 @@ GOOGLE_AUTOCOMPLETE_URL = (
     "http://suggestqueries.google.com/complete/search?client=firefox&q={}"
 )
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"
+NUMBER_SUGGESTIONS_RETURNED = 12
 
 
 @extend_schema(**SWAGGER_SCHEMAS["search/autocomplete/"])
@@ -32,7 +33,18 @@ def autcomplete_search(request):
 
     response_google_data = response_google.json()
 
-    results = response_google_data[1][:10] if response_google_data else []
+    # If `encoded_search_term` is "food" for instance, the response from the Google endpoint will be:
+    # [
+    #    "food",
+    #    ["food near me","food fontainebleau","food avon",...], <- what we want
+    #    [],
+    #    {"google:suggestsubtypes":[...]}
+    # ]
+    results = (
+        response_google_data[1][:NUMBER_SUGGESTIONS_RETURNED]
+        if response_google_data
+        else []
+    )
 
     response_data = {"results": results}
 
