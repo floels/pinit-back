@@ -69,6 +69,7 @@ def autocomplete_search(request):
     return Response(response_data)
 
 
+@extend_schema(**SWAGGER_SCHEMAS["search/"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def search_pins(request):
