@@ -1,9 +1,16 @@
 from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+from django.conf import settings
 
 from ..testing_utils import UserFactory, PinFactory
 from pinit_api.views.search import ERROR_CODE_MISSING_SEARCH_PARAMETER
+from pinit_api.models import Pin
+
+NUMBER_PINS_MATCHING_SEARCH_TITLE = 75
+NUMBER_PINS_MATCHING_SEARCH_DESCRIPTION = 75
+
+PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
 
 
 class SearchTests(APITestCase):
@@ -17,21 +24,30 @@ class SearchTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
         # We will test a search autocomplete on "beach":
-        self.pin_1 = PinFactory.create(
+        PinFactory.create(
             title="My beacheresque view of a beachy beach",
             description="Isn't that beachiful-",
         )
-        self.pin_2 = PinFactory.create(
+        PinFactory.create(
             title="Isn't Beacho a beaufitul name for a boy?",
             description="And Beacha? Yes, beacha if it's a girl.",
         )
-        self.pin_3 = PinFactory.create(
+        PinFactory.create(
             title="Beautiful beach",
             description="I want to go to the beach.",
         )
 
+        # We will search for pins containing "sunset":
+        PinFactory.create_batch(
+            NUMBER_PINS_MATCHING_SEARCH_TITLE, title="Beautiful sunset", description=""
+        )
+        PinFactory.create_batch(
+            NUMBER_PINS_MATCHING_SEARCH_DESCRIPTION,
+            description="That's a beautiful sunset.",
+        )
+
     def test_search_autocomplete_happy_path(self):
-        response = self.client.get("/api/search/autocomplete/?search=beach")
+        response = self.client.get("/api/search/autocomplete/", {"search": "beach"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -57,50 +73,61 @@ class SearchTests(APITestCase):
             [{"code": ERROR_CODE_MISSING_SEARCH_PARAMETER}],
         )
 
-    def test_search_pins_happy_path(self):
-        response = self.client.get("/api/search/?q=beach")
+    def test_search_pins_happy_path_first_page(self):
+        response = self.client.get("/api/search/", {"q": "sunset", "page": "1"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
-        response_results = response_data["results"]
+        self.assertEqual(
+            response_data["count"],
+            NUMBER_PINS_MATCHING_SEARCH_TITLE + NUMBER_PINS_MATCHING_SEARCH_DESCRIPTION,
+        )
 
-        expected_results = [
-            {
-                "id": self.pin_3.id,
-                "title": self.pin_3.title,
-                "description": self.pin_3.description,
-                "image_url": self.pin_3.image_url,
-                "author": {
-                    "username": self.pin_3.author.username,
-                    "display_name": self.pin_3.author.display_name,
-                },
-            },
-            {
-                "id": self.pin_1.id,
-                "title": self.pin_1.title,
-                "description": self.pin_1.description,
-                "image_url": self.pin_1.image_url,
-                "author": {
-                    "username": self.pin_1.author.username,
-                    "display_name": self.pin_1.author.display_name,
-                },
-            },
-        ]
+        first_result = response_data["results"][0]
 
-        self.assertListEqual(response_results, expected_results)
+        self.assertEqual(first_result["title"], "Beautiful sunset")
+        self.assertEqual(first_result["description"], "")
+        self.assertTrue(first_result["image_url"])
+        self.assertTrue(first_result["author"]["username"])
+        self.assertTrue(first_result["author"]["display_name"])
+
+        last_result = response_data["results"][PAGINATION_PAGE_SIZE - 1]
+
+        self.assertEqual(last_result["title"], "Beautiful sunset")
+
+        # Check that results are ordered by decreasing creation date:
+        pin_first_result = Pin.objects.get(id=first_result["id"])
+        pin_last_result = Pin.objects.get(id=last_result["id"])
+
+        self.assertGreater(pin_first_result.created_at, pin_last_result.created_at)
+
+    def test_search_pins_happy_path_second_page(self):
+        response = self.client.get("/api/search/", {"q": "sunset", "page": "2"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        first_result = response_data["results"][0]
+
+        self.assertEqual(first_result["title"], "Beautiful sunset")
+
+        last_result = response_data["results"][PAGINATION_PAGE_SIZE - 1]
+
+        self.assertEqual(last_result["description"], "That's a beautiful sunset.")
 
     def test_search_pins_no_result(self):
-        response = self.client.get("/api/search/?q=horse")
+        response = self.client.get("/api/search/", {"q": "horse"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
-        response_results = response_data["results"]
+        self.assertEqual(response_data["count"], 0)
 
-        self.assertListEqual(response_results, [])
+        self.assertListEqual(response_data["results"], [])
 
     def test_search_pins_missing_search_param(self):
         response = self.client.get("/api/search/")

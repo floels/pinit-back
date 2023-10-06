@@ -2,6 +2,7 @@ from django.db import connection
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
@@ -94,10 +95,11 @@ def search_pins(request):
 
     matched_pins = all_pins_annotated.filter(search=search_query)
 
-    search_results = matched_pins.order_by("-rank")
+    search_results = matched_pins.order_by("-rank", "-created_at")
 
-    serialized_search_results = PinWithAuthorReadSerializer(search_results, many=True)
+    paginator = PageNumberPagination()
+    paginated_results = paginator.paginate_queryset(search_results, request)
 
-    response_data = {"results": serialized_search_results.data}
+    serializer = PinWithAuthorReadSerializer(paginated_results, many=True)
 
-    return Response(response_data)
+    return paginator.get_paginated_response(serializer.data)
