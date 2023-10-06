@@ -4,8 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
 from ..doc.doc_search import SWAGGER_SCHEMAS
+from ..models import Pin
+from ..serializers import PinWithAuthorReadSerializer
 
 
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"
@@ -62,5 +65,38 @@ def autocomplete_search(request):
         suggestions = [item[0] for item in cursor.fetchall()]
 
     response_data = {"results": suggestions}
+
+    return Response(response_data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_pins(request):
+    search_term = request.GET.get("q", None)
+
+    if not search_term:
+        return Response(
+            {"errors": [{"code": ERROR_CODE_MISSING_SEARCH_PARAMETER}]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    shortened_search_term = search_term[:140]
+
+    search_vector = SearchVector("title", weight="A") + SearchVector(
+        "description", weight="B"
+    )
+    search_query = SearchQuery(shortened_search_term)
+
+    all_pins_annotated = Pin.objects.annotate(
+        search=search_vector, rank=SearchRank(search_vector, search_query)
+    )
+
+    matched_pins = all_pins_annotated.filter(search=search_query)
+
+    search_results = matched_pins.order_by("-rank")
+
+    serialized_search_results = PinWithAuthorReadSerializer(search_results, many=True)
+
+    response_data = {"results": serialized_search_results.data}
 
     return Response(response_data)
