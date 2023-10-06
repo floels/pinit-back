@@ -1,10 +1,8 @@
 from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from unittest.mock import patch, Mock
 
-from ..testing_utils import UserFactory
-from pinit_api.utils.constants import ERROR_CODE_UNAUTHORIZED
+from ..testing_utils import UserFactory, PinFactory
 from pinit_api.views.search import ERROR_CODE_MISSING_SEARCH_PARAMETER
 
 
@@ -14,46 +12,46 @@ class SearchTests(APITestCase):
 
         self.client = APIClient()
 
+        # We will test a search autocomplete on "beach":
+        PinFactory.create(
+            title="My beacheresque view of a beachy beach",
+            description="Isn't that beachiful-",
+        )
+        PinFactory.create(
+            title="Isn't Beacho a beaufitul name for a boy?",
+            description="And Beacha? Yes, beacha if it's a girl.",
+        )
+        PinFactory.create(
+            title="Beautiful beach",
+            description="I want to go to the beach.",
+        )
+
     def tearDown(self):
         # Clear authentication headers:
         self.client.credentials()
 
     def test_search_autocomplete_happy_path(self):
-        mock_response_google = Mock()
+        tokens_pair = RefreshToken.for_user(self.test_user)
+        access_token = str(tokens_pair.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
-        mock_response_google_results = ["food", "food snapchat", "food recipes"]
+        response = self.client.get("/api/search/autocomplete/?search=beach")
 
-        mock_response_google.json.return_value = [
-            "food",
-            mock_response_google_results,
-        ]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        with patch("requests.get", return_value=mock_response_google):
-            tokens_pair = RefreshToken.for_user(self.test_user)
-            access_token = str(tokens_pair.access_token)
-            self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        response_data = response.json()
 
-            response = self.client.get("/api/search/autocomplete/?search=food")
+        response_results = response_data["results"]
 
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-            response_data = response.json()
-
-            response_results = response_data["results"]
-
-            self.assertListEqual(response_results, mock_response_google_results)
-
-    def test_get_accounts_no_access_token(self):
-        response = self.client.get("/api/search/autocomplete/?search=food")
-
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.assertEqual(
-            response.json()["errors"],
-            [{"code": ERROR_CODE_UNAUTHORIZED}],
+        # "beach" occurs three times so it should appear first in the list.
+        # Then, "beacha" which occurs twice.
+        # Then, all others, which occur once, ranked by alphabetical order.
+        self.assertListEqual(
+            response_results,
+            ["beach", "beacha", "beacheresque", "beachiful", "beacho", "beachy"],
         )
 
-    def test_get_accounts_missing_search_param(self):
+    def test_search_autocomplete_missing_search_param(self):
         tokens_pair = RefreshToken.for_user(self.test_user)
         access_token = str(tokens_pair.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
