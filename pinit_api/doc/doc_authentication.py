@@ -11,7 +11,7 @@ OBTAIN_TOKEN_SCHEMA = {
             fields={
                 "access_token": serializers.CharField(help_text="Access token"),
                 "refresh_token": serializers.CharField(help_text="Refresh token"),
-            }
+            },
         ),
         401: inline_serializer(
             name="TokenObtainUnauthorizedResponse",
@@ -27,11 +27,11 @@ OBTAIN_TOKEN_SCHEMA = {
                                 ],
                                 help_text="Error code",
                             )
-                        }
+                        },
                     ),
-                    help_text="List of errors"
+                    help_text="List of errors",
                 )
-            }
+            },
         ),
     },
 }
@@ -41,16 +41,16 @@ REFRESH_TOKEN_SCHEMA = {
     "tags": ["Sign-up and authentication"],
     "request": inline_serializer(
         name="TokenRefreshRequest",
-        fields={
-            "refresh_token": serializers.CharField(help_text="Refresh token")
-        }
+        fields={"refresh_token": serializers.CharField(help_text="Refresh token")},
     ),
     "responses": {
         200: inline_serializer(
             name="TokenRefreshSuccessResponse",
             fields={
-                "access_token": serializers.CharField(help_text="Refreshed access token"),
-            }
+                "access_token": serializers.CharField(
+                    help_text="Refreshed access token"
+                ),
+            },
         ),
         401: inline_serializer(
             name="TokenRefreshUnauthorizedResponse",
@@ -65,11 +65,11 @@ REFRESH_TOKEN_SCHEMA = {
                                 ],
                                 help_text="Error code",
                             )
-                        }
+                        },
                     ),
-                    help_text="List of errors"
+                    help_text="List of errors",
                 )
-            }
+            },
         ),
     },
 }

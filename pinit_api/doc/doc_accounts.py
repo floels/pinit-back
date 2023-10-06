@@ -11,9 +11,7 @@ SWAGGER_SCHEMAS = {
         "responses": {
             200: inline_serializer(
                 name="AccountsSuccessResponse",
-                fields={
-                    "results": AccountWithOwnerEmailReadSerializer(many=True)
-                }
+                fields={"results": AccountWithOwnerEmailReadSerializer(many=True)},
             ),
         },
         "examples": [
