@@ -1,11 +1,12 @@
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
+from django.conf import settings
 
 from pinit_api.models import Pin
 from ..testing_utils import UserFactory, PinFactory, JWTAuthenticationMixin
-from pinit_api.views.pin_suggestions import PAGE_SIZE
 
 NUMBER_EXISTING_PINS = 150
+PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
 
 
 class PinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
@@ -41,7 +42,9 @@ class PinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         self.assertEqual(response_data["count"], NUMBER_EXISTING_PINS)
 
         first_response_item = response_data["results"][0]
-        most_recent_pin_second_page = Pin.objects.order_by("-created_at")[PAGE_SIZE]
+        most_recent_pin_second_page = Pin.objects.order_by("-created_at")[
+            PAGINATION_PAGE_SIZE
+        ]
         self.check_response_item_against_pin_object(
             first_response_item, most_recent_pin_second_page
         )

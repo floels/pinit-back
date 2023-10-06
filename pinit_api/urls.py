@@ -35,6 +35,7 @@ urlpatterns = [
         pin_suggestions.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
+    path("search/", search.search_pins, name="search_pins"),
     path(
         "search/autocomplete/", search.autocomplete_search, name="search_autocomplete"
     ),
