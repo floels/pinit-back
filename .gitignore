@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # Fixtures
-pinit_api/fixtures
+pinit_api/fixtures/
 
 # Misc.
 .DS_Store
