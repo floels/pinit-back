@@ -98,8 +98,8 @@ class SearchTests(APITestCase):
         self.assertEqual(last_result["title"], "Beautiful sunset")
 
         # Check that results are ordered by decreasing creation date:
-        pin_first_result = Pin.objects.get(id=first_result["id"])
-        pin_last_result = Pin.objects.get(id=last_result["id"])
+        pin_first_result = Pin.objects.get(unique_id=first_result["unique_id"])
+        pin_last_result = Pin.objects.get(unique_id=last_result["unique_id"])
 
         self.assertGreater(pin_first_result.created_at, pin_last_result.created_at)
 
