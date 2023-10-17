@@ -15,4 +15,4 @@ class PinWithAuthorReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pin
-        fields = ["id", "image_url", "title", "description", "author"]
+        fields = ["unique_id", "image_url", "title", "description", "author"]
