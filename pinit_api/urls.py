@@ -5,7 +5,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from .views import authentication, signup, accounts, pin_suggestions, search
+from .views import authentication, signup, accounts, pins, search
 
 urlpatterns = [
     # API documentation
@@ -32,7 +32,7 @@ urlpatterns = [
     path("accounts/", accounts.get_accounts, name="get_accounts"),
     path(
         "pin-suggestions/",
-        pin_suggestions.GetPinSuggestionsView.as_view(),
+        pins.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
     path("search/", search.search_pins, name="search_pins"),
