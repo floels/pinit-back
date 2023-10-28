@@ -52,7 +52,7 @@ class Account(models.Model):
 
 
 class Pin(models.Model):
-    unique_id = models.BigIntegerField(unique=True, editable=False)
+    unique_id = models.CharField(max_length=18, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(max_length=200)
@@ -72,8 +72,10 @@ class Pin(models.Model):
                 100_000_000_000_000_000, 999_999_999_999_999_999
             )
 
-            if not Pin.objects.filter(unique_id=tentative_unique_id).exists():
-                return tentative_unique_id
+            tentative_unique_id_string = str(tentative_unique_id)
+
+            if not Pin.objects.filter(unique_id=tentative_unique_id_string).exists():
+                return tentative_unique_id_string
 
     def __str__(self):
         return f"Pin {self.unique_id} by {self.author.username}"
