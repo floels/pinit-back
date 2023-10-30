@@ -18,7 +18,7 @@ class GetPinDetailsView(generics.RetrieveAPIView):
 
 
 @extend_schema(
-    operation_id="pins/suggestions/",
+    operation_id="pin-suggestions/",
     tags=["Pins"],
     description="Returns a list of pin suggestions for the user.",
 )

@@ -36,7 +36,7 @@ urlpatterns = [
         name="get_pin_details",
     ),
     path(
-        "pins/suggestions/",
+        "pin-suggestions/",
         pins.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
