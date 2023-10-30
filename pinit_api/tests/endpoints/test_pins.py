@@ -18,7 +18,7 @@ class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         self.authenticate_client(self.calling_user)
 
     def test_get_pin_suggestions_first_page(self):
-        response = self.client.get("/api/pins/suggestions/", {"page": 1})
+        response = self.client.get("/api/pin-suggestions/", {"page": 1})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -33,7 +33,7 @@ class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         )
 
     def test_get_pin_suggestions_second_page(self):
-        response = self.client.get("/api/pins/suggestions/", {"page": 2})
+        response = self.client.get("/api/pin-suggestions/", {"page": 2})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
