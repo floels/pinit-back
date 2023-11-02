@@ -38,6 +38,7 @@ class Account(models.Model):
     last_name = models.CharField(max_length=100, blank=True, null=True)
     business_name = models.CharField(max_length=100, blank=True, null=True)
     initial = models.CharField(max_length=1, blank=True, null=True)
+    profile_picture_url = models.URLField(blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     @property
@@ -55,7 +56,7 @@ class Pin(models.Model):
     unique_id = models.CharField(max_length=18, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
-    image_url = models.URLField(max_length=200)
+    image_url = models.URLField()
     description = models.TextField(null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE)
 
