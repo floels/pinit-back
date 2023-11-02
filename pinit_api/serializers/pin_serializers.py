@@ -7,7 +7,7 @@ from .account_serializers import AccountBaseSerializer
 class AccountReadSerializer(AccountBaseSerializer):
     class Meta:
         model = Account
-        fields = ("username", "display_name")
+        fields = ("username", "display_name", "profile_picture_url")
 
 
 class PinWithAuthorReadSerializer(serializers.ModelSerializer):
