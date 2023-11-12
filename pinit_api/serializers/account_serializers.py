@@ -28,6 +28,6 @@ class AccountWithPublicDetailsReadSerializer(AccountBaseSerializer):
             "type",
             "display_name",
             "profile_picture_url",
-            "background_profile_url",
+            "background_picture_url",
             "description",
         )

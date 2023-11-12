@@ -31,6 +31,11 @@ urlpatterns = [
     ),
     path("owned-accounts/", accounts.get_owned_accounts, name="get_owned_accounts"),
     path(
+        "accounts/<str:username>/",
+        accounts.GetAccountDetailsView.as_view(),
+        name="get_account_details",
+    ),
+    path(
         "pins/<str:unique_id>/",
         pins.GetPinDetailsView.as_view(),
         name="get_pin_details",

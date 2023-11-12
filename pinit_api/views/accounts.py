@@ -1,3 +1,4 @@
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -5,7 +6,10 @@ from drf_spectacular.utils import extend_schema
 
 
 from ..models import Account
-from ..serializers import AccountWithOwnerEmailReadSerializer
+from ..serializers import (
+    AccountWithOwnerEmailReadSerializer,
+    AccountWithPublicDetailsReadSerializer,
+)
 from ..doc.doc_accounts import SWAGGER_SCHEMAS
 
 
@@ -20,3 +24,9 @@ def get_owned_accounts(request):
     response_data = {"results": serialized_accounts.data}
 
     return Response(response_data)
+
+
+class GetAccountDetailsView(generics.RetrieveAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountWithPublicDetailsReadSerializer
+    lookup_field = "username"
