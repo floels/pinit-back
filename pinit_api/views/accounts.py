@@ -12,7 +12,7 @@ from ..doc.doc_accounts import SWAGGER_SCHEMAS
 @extend_schema(**SWAGGER_SCHEMAS["accounts/"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_accounts(request):
+def get_owned_accounts(request):
     accounts = Account.objects.select_related("owner").filter(owner=request.user)
 
     serialized_accounts = AccountWithOwnerEmailReadSerializer(accounts, many=True)
