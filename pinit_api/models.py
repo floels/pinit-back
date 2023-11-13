@@ -39,6 +39,8 @@ class Account(models.Model):
     business_name = models.CharField(max_length=100, blank=True, null=True)
     initial = models.CharField(max_length=1, blank=True, null=True)
     profile_picture_url = models.URLField(blank=True, null=True)
+    background_picture_url = models.URLField(blank=True, null=True)
+    description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     @property
