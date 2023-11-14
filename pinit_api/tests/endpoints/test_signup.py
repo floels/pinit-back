@@ -35,12 +35,12 @@ class SignupTests(TestCase):
         self.number_existing_accounts = Account.objects.count()
 
     def test_signup_happy_path(self):
-        data = {
+        request_payload = {
             "email": "new.user@example.com",
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         # Check response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -66,16 +66,20 @@ class SignupTests(TestCase):
         self.assertEqual(new_account.business_name, None)
 
     def test_signup_invalid_email(self):
-        data = {
+        request_payload = {
             "email": "new.user@example.",
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_EMAIL}],
         )
 
@@ -84,16 +88,19 @@ class SignupTests(TestCase):
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_blank_email(self):
-        data = {
+        request_payload = {
             "email": "",
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_EMAIL}],
         )
 
@@ -102,16 +109,20 @@ class SignupTests(TestCase):
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_email_already_signed_up(self):
-        data = {
+        request_payload = {
             "email": self.existing_user_email,
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_EMAIL_ALREADY_SIGNED_UP}],
         )
 
@@ -120,16 +131,20 @@ class SignupTests(TestCase):
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_invalid_password(self):
-        data = {
+        request_payload = {
             "email": "new.user@example.com",
             "password": "abc",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],
         )
 
@@ -138,16 +153,20 @@ class SignupTests(TestCase):
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_blank_password(self):
-        data = {
+        request_payload = {
             "email": "new.user@example.com",
             "password": "",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],
         )
 
@@ -156,16 +175,20 @@ class SignupTests(TestCase):
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_invalid_birthdate(self):
-        data = {
+        request_payload = {
             "email": "new.user@example.com",
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-13-01",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_BIRTHDATE}],
         )
 
@@ -174,16 +197,20 @@ class SignupTests(TestCase):
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_blank_birthdate(self):
-        data = {
+        request_payload = {
             "email": "new.user@example.com",
             "password": "Pa$$w0rd_new_user",
             "birthdate": "",
         }
-        response = self.client.post("/api/signup/", data, format="json")
+
+        response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_BIRTHDATE}],
         )
 

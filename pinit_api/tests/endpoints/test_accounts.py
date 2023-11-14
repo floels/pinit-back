@@ -1,84 +1,32 @@
-from datetime import datetime, timedelta
 from rest_framework.test import APITestCase, APIClient
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework import status
 
-from pinit_api.utils.constants import ERROR_CODE_UNAUTHORIZED
+from pinit_api.utils.constants import ERROR_CODE_NOT_FOUND
 from ..testing_utils import AccountFactory
 
 
-class AccountTests(APITestCase):
+class GetAccountDetailsTests(APITestCase):
     def setUp(self):
-        self.test_account = AccountFactory.create()
-
-        self.test_user = self.test_account.owner
-
-        # Create another user and account,
-        # to check that it won't be returned for the calling user set above:
-        _ = AccountFactory.create()
+        self.account = AccountFactory()
 
         self.client = APIClient()
 
-    def tearDown(self):
-        # Clear authentication headers:
-        self.client.credentials()
-
-    def test_get_owned_accounts_happy_path(self):
-        tokens_pair = RefreshToken.for_user(self.test_user)
-        access_token = str(tokens_pair.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
-
-        response = self.client.get("/api/owned-accounts/")
+    def test_get_account_details_happy_path(self):
+        response = self.client.get(f"/api/accounts/{self.account.username}/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
-        response_results = response_data["results"]
+        self.assertEqual(response_data["username"], self.account.username)
+        self.assertEqual(response_data["type"], self.account.type)
+        self.assertEqual(response_data["display_name"], self.account.display_name)
 
-        self.assertEqual(len(response_results), 1)
+        self.assertIn("profile_picture_url", response_data)
+        self.assertIn("background_picture_url", response_data)
+        self.assertIn("description", response_data)
 
-        account = response_results[0]
+    def test_get_account_details_not_found(self):
+        response = self.client.get("/api/account/non_existing_username/")
 
-        self.assertEqual(account["username"], self.test_account.username)
-        self.assertEqual(account["type"], self.test_account.type)
-        self.assertEqual(account["initial"], self.test_account.initial)
-        self.assertEqual(account["display_name"], self.test_account.display_name)
-        self.assertEqual(account["owner_email"], self.test_user.email)
-
-    def test_get_owned_accounts_no_access_token(self):
-        response = self.client.get("/api/owned-accounts/")
-
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.assertEqual(
-            response.json()["errors"],
-            [{"code": ERROR_CODE_UNAUTHORIZED}],
-        )
-
-    def test_get_owned_accounts_expired_access_token(self):
-        # Create expired token for the test user
-        access_token = AccessToken.for_user(self.test_user)
-        access_token.set_exp(from_time=datetime.now() - timedelta(minutes=10))
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(access_token)}")
-
-        response = self.client.get("/api/owned-accounts/")
-
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.assertEqual(
-            response.json()["errors"],
-            [{"code": ERROR_CODE_UNAUTHORIZED}],
-        )
-
-    def test_get_owned_accounts_invalid_access_token(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid_token")
-
-        response = self.client.get("/api/owned-accounts/")
-
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.assertEqual(
-            response.json()["errors"],
-            [{"code": ERROR_CODE_UNAUTHORIZED}],
-        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

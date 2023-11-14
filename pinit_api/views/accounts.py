@@ -1,29 +1,8 @@
 from rest_framework import generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
-
 
 from ..models import Account
-from ..serializers import (
-    AccountWithOwnerEmailReadSerializer,
-    AccountWithPublicDetailsReadSerializer,
-)
-from ..doc.doc_accounts import SWAGGER_SCHEMAS
-
-
-@extend_schema(**SWAGGER_SCHEMAS["accounts/"])
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_owned_accounts(request):
-    accounts = Account.objects.select_related("owner").filter(owner=request.user)
-
-    serialized_accounts = AccountWithOwnerEmailReadSerializer(accounts, many=True)
-
-    response_data = {"results": serialized_accounts.data}
-
-    return Response(response_data)
+from ..serializers import AccountWithPublicDetailsReadSerializer
+from ..utils.constants import ERROR_CODE_NOT_FOUND
 
 
 class GetAccountDetailsView(generics.RetrieveAPIView):

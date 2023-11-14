@@ -22,52 +22,68 @@ class AuthenticationTests(TestCase):
         )
 
     def test_obtain_and_refresh_token_happy_path(self):
-        data = {
+        request_payload_obtain = {
             "email": self.existing_user_email,
             "password": self.existing_user_password,
         }
-        response_obtain = self.client.post("/api/token/obtain/", data, format="json")
+
+        response_obtain = self.client.post(
+            "/api/token/obtain/", request_payload_obtain, format="json"
+        )
 
         self.assertEqual(response_obtain.status_code, status.HTTP_200_OK)
-        response_obtain_data = response_obtain.json()
-        access_token = response_obtain_data["access_token"]
+
+        response_data_obtain = response_obtain.json()
+
+        access_token = response_data_obtain["access_token"]
         assert bool(access_token)
 
         # Refresh the access token:
-        refresh_token = response_obtain_data["refresh_token"]
+        refresh_token = response_data_obtain["refresh_token"]
+
         response_refresh = self.client.post(
             "/api/token/refresh/", {"refresh_token": refresh_token}, format="json"
         )
 
         self.assertEqual(response_refresh.status_code, status.HTTP_200_OK)
-        refreshed_access_token = response_refresh.json()["access_token"]
+
+        response_data_refresh = response_refresh.json()
+
+        refreshed_access_token = response_data_refresh["access_token"]
         assert bool(refreshed_access_token)
 
-    def test_obtain_token_wrong_credentials(self):
-        data_wrong_email = {"email": "wrong_email", "password": "somePa$$word"}
-        response_wrong_email = self.client.post(
-            "/api/token/obtain/", data_wrong_email, format="json"
+    def test_obtain_token_wrong_email(self):
+        request_payload = {"email": "wrong_email", "password": "somePa$$word"}
+
+        response = self.client.post(
+            "/api/token/obtain/", request_payload, format="json"
         )
 
-        self.assertEqual(response_wrong_email.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response_wrong_email.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_EMAIL}],
         )
 
-        data_wrong_password = {
+    def test_obtain_token_wrong_password(self):
+        request_payload = {
             "email": self.existing_user_email,
             "password": "somePa$$word",
         }
-        response_wrong_password = self.client.post(
-            "/api/token/obtain/", data_wrong_password, format="json"
+
+        response = self.client.post(
+            "/api/token/obtain/", request_payload, format="json"
         )
 
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response_wrong_password.status_code, status.HTTP_401_UNAUTHORIZED
-        )
-        self.assertEqual(
-            response_wrong_password.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],
         )
 
@@ -79,8 +95,11 @@ class AuthenticationTests(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}],
         )
 
@@ -91,7 +110,10 @@ class AuthenticationTests(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}],
         )
