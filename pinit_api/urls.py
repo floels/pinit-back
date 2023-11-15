@@ -5,7 +5,15 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from .views import authentication, signup, accounts, pins, search
+from .views import (
+    authentication,
+    signup,
+    owned_accounts,
+    accounts,
+    pin_suggestions,
+    pins,
+    search,
+)
 
 urlpatterns = [
     # API documentation
@@ -29,7 +37,9 @@ urlpatterns = [
         authentication.TokenRefreshView.as_view(),
         name=("refresh_token"),
     ),
-    path("owned-accounts/", accounts.get_owned_accounts, name="get_owned_accounts"),
+    path(
+        "owned-accounts/", owned_accounts.get_owned_accounts, name="get_owned_accounts"
+    ),
     path(
         "accounts/<str:username>/",
         accounts.GetAccountDetailsView.as_view(),
@@ -42,7 +52,7 @@ urlpatterns = [
     ),
     path(
         "pin-suggestions/",
-        pins.GetPinSuggestionsView.as_view(),
+        pin_suggestions.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
     path("search/", search.search_pins, name="search_pins"),

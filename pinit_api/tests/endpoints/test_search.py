@@ -68,8 +68,10 @@ class SearchTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_MISSING_SEARCH_PARAMETER}],
         )
 
@@ -134,7 +136,9 @@ class SearchTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        response_data = response.json()
+
         self.assertEqual(
-            response.json()["errors"],
+            response_data["errors"],
             [{"code": ERROR_CODE_MISSING_SEARCH_PARAMETER}],
         )
