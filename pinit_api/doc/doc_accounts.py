@@ -4,8 +4,8 @@ from ..serializers import AccountWithOwnerEmailReadSerializer
 
 
 SWAGGER_SCHEMAS = {
-    "accounts/": {
-        "operation_id": "accounts/",
+    "owned-accounts/": {
+        "operation_id": "owned-accounts/",
         "description": "Returns all accounts owned by the user.",
         "tags": ["Accounts"],
         "responses": {
@@ -33,5 +33,11 @@ SWAGGER_SCHEMAS = {
                 media_type="application/json",
             )
         ],
-    }
+    },
+    "accounts/<username>/": {
+        "operation_id": "accounts/<username>/",
+        "tags": ["Accounts"],
+        "auth": [None],
+        "description": "Returns the public details for account with username \<username\>.",
+    },
 }

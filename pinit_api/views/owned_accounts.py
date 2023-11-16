@@ -3,13 +3,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
-
 from ..models import Account
 from ..serializers import AccountWithOwnerEmailReadSerializer
 from ..doc.doc_accounts import SWAGGER_SCHEMAS
 
 
-@extend_schema(**SWAGGER_SCHEMAS["accounts/"])
+@extend_schema(**SWAGGER_SCHEMAS["owned-accounts/"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_owned_accounts(request):
