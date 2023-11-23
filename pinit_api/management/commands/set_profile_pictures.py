@@ -7,12 +7,12 @@ from pinit_api.models import Account
 
 
 class Command(BaseCommand):
-    help = "Sets a random profile picture to all accounts not having one, using the list of profile picture URLs in fixtures."
+    help = "Sets a random profile picture to all accounts not having one, using the list of picture URLs in fixtures."
 
     def handle(self, *args, **options):
-        self.set_profile_picture_url()
+        self.set_profile_picture_urls()
 
-    def set_profile_picture_url(self):
+    def set_profile_picture_urls(self):
         file_path = os.path.join(
             settings.BASE_DIR,
             "..",
@@ -21,14 +21,22 @@ class Command(BaseCommand):
             "profile_picture_urls.json",
         )
 
-        with open(file_path, "r") as profile_picture_urls_file:
-            profile_picture_urls = json.load(profile_picture_urls_file)
+        number_accounts_updated = 0
+
+        with open(file_path, "r") as picture_urls_file:
+            picture_urls = json.load(picture_urls_file)
 
             for account in Account.objects.filter(profile_picture_url__isnull=True):
-                random_url = random.choice(profile_picture_urls)
+                random_url = random.choice(picture_urls)
 
                 account.profile_picture_url = random_url
 
                 account.save()
 
-        self.stdout.write(self.style.SUCCESS("Successfully set profile pictures."))
+                number_accounts_updated += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Successfully set {number_accounts_updated} profile pictures."
+            )
+        )
