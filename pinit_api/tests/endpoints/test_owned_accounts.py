@@ -44,6 +44,9 @@ class AccountTests(APITestCase):
         self.assertEqual(account["type"], self.test_account.type)
         self.assertEqual(account["initial"], self.test_account.initial)
         self.assertEqual(account["display_name"], self.test_account.display_name)
+        self.assertEqual(
+            account["profile_picture_url"], self.test_account.profile_picture_url
+        )
         self.assertEqual(account["owner_email"], self.test_user.email)
 
     def test_get_owned_accounts_no_access_token(self):
