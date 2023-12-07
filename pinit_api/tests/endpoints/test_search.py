@@ -1,9 +1,8 @@
 from rest_framework.test import APITestCase, APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from django.conf import settings
 
-from ..testing_utils import UserFactory, PinFactory
+from ..testing_utils import PinFactory
 from pinit_api.views.search import ERROR_CODE_MISSING_SEARCH_PARAMETER
 from pinit_api.models import Pin
 
@@ -15,13 +14,7 @@ PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
 
 class SearchTests(APITestCase):
     def setUp(self):
-        self.test_user = UserFactory.create()
-
-        # Create authenticated client:
         self.client = APIClient()
-        tokens_pair = RefreshToken.for_user(self.test_user)
-        access_token = str(tokens_pair.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
         # We will test a search autocomplete on "beach":
         PinFactory.create(
