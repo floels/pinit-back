@@ -1,6 +1,5 @@
 from django.db import connection
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
@@ -45,7 +44,6 @@ LIMIT {NUMBER_SUGGESTIONS_RETURNED};
 
 @extend_schema(**SWAGGER_SCHEMAS["search/autocomplete/"])
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def autocomplete_search(request):
     search_term = request.GET.get("search", None)
 
@@ -72,7 +70,6 @@ def autocomplete_search(request):
 
 @extend_schema(**SWAGGER_SCHEMAS["search/"])
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def search_pins(request):
     search_term = request.GET.get("q", None)
 
