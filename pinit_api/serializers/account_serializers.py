@@ -9,9 +9,7 @@ class AccountBaseSerializer(serializers.ModelSerializer):
         return obj.display_name
 
 
-class AccountWithOwnerEmailReadSerializer(AccountBaseSerializer):
-    owner_email = serializers.SerializerMethodField()
-
+class AccountSimpleReadSerializer(AccountBaseSerializer):
     class Meta:
         model = Account
         fields = (
@@ -19,12 +17,8 @@ class AccountWithOwnerEmailReadSerializer(AccountBaseSerializer):
             "type",
             "initial",
             "display_name",
-            "owner_email",
             "profile_picture_url",
         )
-
-    def get_owner_email(self, obj):
-        return obj.owner.email
 
 
 class AccountWithPublicDetailsReadSerializer(AccountBaseSerializer):

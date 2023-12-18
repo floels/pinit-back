@@ -1,6 +1,6 @@
 from drf_spectacular.utils import inline_serializer, OpenApiExample
 
-from ..serializers import AccountWithOwnerEmailReadSerializer
+from ..serializers import AccountSimpleReadSerializer
 
 
 SWAGGER_SCHEMAS = {
@@ -11,7 +11,7 @@ SWAGGER_SCHEMAS = {
         "responses": {
             200: inline_serializer(
                 name="AccountsSuccessResponse",
-                fields={"results": AccountWithOwnerEmailReadSerializer(many=True)},
+                fields={"results": AccountSimpleReadSerializer(many=True)},
             ),
         },
         "examples": [
@@ -25,7 +25,6 @@ SWAGGER_SCHEMAS = {
                             "type": "personal",
                             "display_name": "John Doe",
                             "initial": "J",
-                            "owner_email": "john.doe@example.com",
                         }
                     ]
                 },
