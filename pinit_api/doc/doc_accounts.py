@@ -18,15 +18,11 @@ SWAGGER_SCHEMAS = {
             OpenApiExample(
                 "Successful Response",
                 value={
-                    "results": [
-                        {
-                            "type": "accounts",
-                            "username": "johndoe",
-                            "type": "personal",
-                            "display_name": "John Doe",
-                            "initial": "J",
-                        }
-                    ]
+                    "type": "personal",
+                    "username": "johndoe",
+                    "type": "personal",
+                    "display_name": "John Doe",
+                    "initial": "J",
                 },
                 response_only=True,
                 media_type="application/json",
