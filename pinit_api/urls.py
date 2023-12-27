@@ -13,6 +13,7 @@ from .views import (
     pin_suggestions,
     pins,
     search,
+    create_pin,
 )
 
 urlpatterns = [
@@ -59,4 +60,5 @@ urlpatterns = [
     path(
         "search/autocomplete/", search.autocomplete_search, name="search_autocomplete"
     ),
+    path("create-pin/", create_pin.create_pin, name="create_pin"),
 ]
