@@ -7,4 +7,4 @@ from rest_framework import status
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_pin(request):
-    return Response(None, status=status.HTTP_201_CREATED)
+    return Response({"pin_id": "01234567789012345"}, status=status.HTTP_201_CREATED)
