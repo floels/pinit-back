@@ -6,7 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from pinit_api.models import Pin
-from pinit_api.utils.constants import ERROR_CODE_PIN_CREATION_FAILED
+from pinit_api.utils.constants import (
+    ERROR_CODE_PIN_CREATION_FAILED,
+    ERROR_CODE_MISSING_PIN_IMAGE_FILE,
+)
 from pinit_api.tests.testing_utils import AccountFactory
 from pinit_api.serializers.pin_serializers import PinBasicReadSerializer
 
@@ -27,6 +30,10 @@ def create_pin(request):
     title = request.data.get("title")
     description = request.data.get("description")
     image_file = request.FILES.get("image_file")
+
+    if not image_file:
+        response_data = {"errors": [{"code": ERROR_CODE_MISSING_PIN_IMAGE_FILE}]}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # TODO: retrieve account of authenticated user, based on request header
 
