@@ -8,6 +8,6 @@ SWAGGER_SCHEMAS = {
         "operation_id": "pins/<unique_id>/",
         "tags": ["Pins"],
         "auth": [None],
-        "description": "Returns the detailed information for pin with unique ID \<unique_id\>",
+        "description": "Returns the detailed information for pin with unique ID 'unique_id'",
     },
 }

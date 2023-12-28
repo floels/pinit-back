@@ -39,8 +39,6 @@ class UserCreationForm(forms.ModelForm):
 
 
 class UserChangeForm(forms.ModelForm):
-    """A form for updating users."""
-
     password = ReadOnlyPasswordHashField()
 
     class Meta:
@@ -60,11 +58,7 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = (
-        "email",
-        "birthdate",
-        "is_admin",
-    )
+    list_display = ("email", "birthdate", "is_admin", "created_at")
     list_filter = ("is_admin",)
     fieldsets = (
         (None, {"fields": ("email", "password")}),
