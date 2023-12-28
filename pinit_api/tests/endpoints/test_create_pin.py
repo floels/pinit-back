@@ -29,18 +29,21 @@ class CreatePinTests(APITestCase):
         bucket = s3_resource.Bucket(S3_BUCKET_NAME)
         bucket.create()
 
-    def check_presence_file_in_s3_bucket(self, key):
+    def check_file_in_s3(self, expected_key, expected_content):
         s3 = boto3.resource("s3")
 
-        object = s3.Object(S3_BUCKET_NAME, key)
+        object = s3.Object(S3_BUCKET_NAME, expected_key)
 
-        print(str(object.get()["Body"].read()))
+        file_content = object.get()["Body"].read()
+
+        self.assertEqual(file_content, expected_content)
 
     def test_create_pin_happy_path(self):
-        pin_image_file_content = BytesIO(b"image data")
-        pin_image_file_content.name = "pin_image_file.jpg"
+        pin_image_file_content = b"pin image data"
+        pin_image_file = BytesIO(pin_image_file_content)
+        pin_image_file.name = "pin_image_file.jpg"
 
-        data = {"title": "", "description": "", "image_file": pin_image_file_content}
+        data = {"title": "", "description": "", "image_file": pin_image_file}
 
         response = self.client.post("/api/create-pin/", data, format="multipart")
 
@@ -50,6 +53,6 @@ class CreatePinTests(APITestCase):
 
         created_pin = Pin.objects.get()
 
-        expected_file_key = f"pins/pin_{created_pin.unique_id}.jpg"
+        pin_image_file_key_s3 = f"pins/pin_{created_pin.unique_id}.jpg"
 
-        self.check_presence_file_in_s3_bucket(expected_file_key)
+        self.check_file_in_s3(pin_image_file_key_s3, pin_image_file_content)

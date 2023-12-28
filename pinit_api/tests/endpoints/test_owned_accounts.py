@@ -63,7 +63,7 @@ class AccountTests(APITestCase):
     def test_get_owned_accounts_expired_access_token(self):
         # Create expired token for the test user
         access_token = AccessToken.for_user(self.test_user)
-        access_token.set_exp(from_time=datetime.now() - timedelta(minutes=10))
+        access_token.set_exp(from_time=datetime.now() - timedelta(days=10))
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(access_token)}")
 
         response = self.client.get("/api/owned-accounts/")

@@ -8,7 +8,8 @@ on:
 jobs:
   run-checks:
     runs-on: ubuntu-latest
-
+    environment:
+      name: test
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
