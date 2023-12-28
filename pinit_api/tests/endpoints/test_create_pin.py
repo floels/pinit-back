@@ -56,3 +56,12 @@ class CreatePinTests(APITestCase):
         pin_image_file_key_s3 = f"pins/pin_{created_pin.unique_id}.jpg"
 
         self.check_file_in_s3(pin_image_file_key_s3, pin_image_file_content)
+
+    def test_create_pin_missing_file(self):
+        data = {"title": "Title", "description": "Description"}
+
+        response = self.client.post("/api/create-pin/", data, format="multipart")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(Pin.objects.count(), 0)
