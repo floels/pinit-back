@@ -51,6 +51,7 @@ urllib3 = "*"
 psycopg2-binary = "*"
 boto3 = "*"
 django-storages = "*"
+moto = {extras = ["s3"], version = "*"}
 
 [dev-packages]
 
