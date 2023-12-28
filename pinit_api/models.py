@@ -58,7 +58,7 @@ class Pin(models.Model):
     unique_id = models.CharField(max_length=18, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
-    image_url = models.URLField()
+    image_url = models.URLField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE)
 

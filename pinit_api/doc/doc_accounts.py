@@ -33,6 +33,6 @@ SWAGGER_SCHEMAS = {
         "operation_id": "accounts/<username>/",
         "tags": ["Accounts"],
         "auth": [None],
-        "description": "Returns the public details for account with username \<username\>.",
+        "description": "Returns the public details for account with username 'username'.",
     },
 }

@@ -10,6 +10,12 @@ class AccountReadSerializer(AccountBaseSerializer):
         fields = ("username", "display_name", "profile_picture_url")
 
 
+class PinBasicReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pin
+        fields = ["unique_id", "image_url", "title", "description"]
+
+
 class PinWithAuthorReadSerializer(serializers.ModelSerializer):
     author = AccountReadSerializer(read_only=True)
 
