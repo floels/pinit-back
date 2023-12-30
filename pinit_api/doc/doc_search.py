@@ -1,5 +1,6 @@
 from drf_spectacular.utils import inline_serializer, OpenApiParameter
 from rest_framework import serializers
+from pinit_api.serializers import PinWithAuthorReadSerializer
 
 
 SWAGGER_SCHEMAS = {
@@ -7,6 +8,7 @@ SWAGGER_SCHEMAS = {
         "operation_id": "search/autocomplete/",
         "description": "Takes a search term and returns a list of search autocomplete suggestions for this term.",
         "tags": ["Search"],
+        "auth": [None],
         "parameters": [
             OpenApiParameter(
                 name="search",
@@ -32,6 +34,7 @@ SWAGGER_SCHEMAS = {
         "operation_id": "search/",
         "description": "Takes a search term and returns a list of relevant pins.",
         "tags": ["Search"],
+        "auth": [None],
         "parameters": [
             OpenApiParameter(
                 name="q",
@@ -39,5 +42,11 @@ SWAGGER_SCHEMAS = {
                 required=True,
             )
         ],
+        "responses": {
+            200: inline_serializer(
+                name="SearchSuccessResponse",
+                fields={"results": PinWithAuthorReadSerializer(many=True)},
+            ),
+        },
     },
 }

@@ -60,5 +60,5 @@ urlpatterns = [
     path(
         "search/autocomplete/", search.autocomplete_search, name="search_autocomplete"
     ),
-    path("create-pin/", create_pin.create_pin, name="create_pin"),
+    path("create-pin/", create_pin.CreatePinView.as_view(), name="create_pin"),
 ]

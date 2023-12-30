@@ -7,8 +7,11 @@ from ..serializers import PinWithAuthorReadSerializer
 from ..doc.doc_pins import SWAGGER_SCHEMAS
 
 
-@extend_schema(**SWAGGER_SCHEMAS["pin-suggestions/"])
 class GetPinSuggestionsView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Pin.objects.all().order_by("-created_at")
     serializer_class = PinWithAuthorReadSerializer
+
+    @extend_schema(**SWAGGER_SCHEMAS["pin-suggestions/"])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

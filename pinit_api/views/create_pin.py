@@ -1,10 +1,10 @@
 import os
 import boto3
 from django.conf import settings
-from rest_framework.decorators import api_view, permission_classes
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import generics, status, serializers
 from pinit_api.models import Pin, Account
 from pinit_api.utils.constants import (
     ERROR_CODE_PIN_CREATION_FAILED,
@@ -12,7 +12,7 @@ from pinit_api.utils.constants import (
     ERROR_CODE_MISSING_USERNAME,
     ERROR_CODE_WRONG_USERNAME,
 )
-from pinit_api.tests.testing_utils import AccountFactory
+from pinit_api.doc.doc_create_pin import SWAGGER_SCHEMAS
 from pinit_api.serializers.pin_serializers import PinBasicReadSerializer
 
 
@@ -34,47 +34,58 @@ def upload_file_to_s3(file, file_name):
     s3_client.upload_fileobj(file, settings.S3_PINS_BUCKET_NAME, file_name)
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def create_pin(request):
-    username = request.META.get("HTTP_X_USERNAME")
+class CreatePinRequestSerializer(serializers.Serializer):
+    title = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    image_file = serializers.FileField()
 
-    if not username:
-        response_data = {"errors": [{"code": ERROR_CODE_MISSING_USERNAME}]}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    user = request.user
+class CreatePinView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CreatePinRequestSerializer  # this is merely for
+    # drf_spectacular to not throw an error for this view. We don't
+    # actually use this 'serializer_class' in the method below.
 
-    account = Account.objects.filter(username=username, owner=user).first()
+    @extend_schema(**SWAGGER_SCHEMAS["create-pin/"])
+    def post(self, request, *args, **kwargs):
+        username = request.META.get("HTTP_X_USERNAME")
 
-    if not account:
-        response_data = {"errors": [{"code": ERROR_CODE_WRONG_USERNAME}]}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        if not username:
+            response_data = {"errors": [{"code": ERROR_CODE_MISSING_USERNAME}]}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    title = request.data.get("title")
-    description = request.data.get("description")
-    uploaded_file = request.FILES.get("image_file")
+        user = request.user
 
-    if not uploaded_file:
-        response_data = {"errors": [{"code": ERROR_CODE_MISSING_PIN_IMAGE_FILE}]}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        account = Account.objects.filter(username=username, owner=user).first()
 
-    pin = Pin.objects.create(title=title, description=description, author=account)
+        if not account:
+            response_data = {"errors": [{"code": ERROR_CODE_WRONG_USERNAME}]}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    _, uploaded_file_extension = os.path.splitext(uploaded_file.name)
+        title = request.data.get("title")
+        description = request.data.get("description")
+        uploaded_file = request.FILES.get("image_file")
 
-    file_key_s3 = compute_file_key_s3(pin.unique_id, uploaded_file_extension)
+        if not uploaded_file:
+            response_data = {"errors": [{"code": ERROR_CODE_MISSING_PIN_IMAGE_FILE}]}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        upload_file_to_s3(uploaded_file, file_key_s3)
-    except:
-        pin.delete()
-        response_data = {"errors": [{"code": ERROR_CODE_PIN_CREATION_FAILED}]}
-        return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        pin = Pin.objects.create(title=title, description=description, author=account)
 
-    pin.image_url = compute_file_url_s3(file_key_s3)
-    pin.save()
+        _, uploaded_file_extension = os.path.splitext(uploaded_file.name)
 
-    pin_serializer = PinBasicReadSerializer(pin)
+        file_key_s3 = compute_file_key_s3(pin.unique_id, uploaded_file_extension)
 
-    return Response(pin_serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            upload_file_to_s3(uploaded_file, file_key_s3)
+        except:
+            pin.delete()
+            response_data = {"errors": [{"code": ERROR_CODE_PIN_CREATION_FAILED}]}
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        pin.image_url = compute_file_url_s3(file_key_s3)
+        pin.save()
+
+        pin_serializer = PinBasicReadSerializer(pin)
+
+        return Response(pin_serializer.data, status=status.HTTP_201_CREATED)
