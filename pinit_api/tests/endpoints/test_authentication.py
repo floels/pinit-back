@@ -1,4 +1,7 @@
+from datetime import datetime, timezone
 from django.test import TestCase
+from django.utils.dateparse import parse_datetime
+from django.conf import settings
 from rest_framework import status
 from pinit_api.models import User
 from pinit_api.utils.constants import (
@@ -21,6 +24,41 @@ class AuthenticationTests(TestCase):
             password=self.existing_user_password,
         )
 
+    def test_obtain_token_happy_path(self):
+        request_payload = {
+            "email": self.existing_user_email,
+            "password": self.existing_user_password,
+        }
+
+        response = self.client.post(
+            "/api/token/obtain/", request_payload, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        access_token = response_data["access_token"]
+        assert bool(access_token)
+
+        # Check that access token expiration date is set as expected:
+        access_token_expiration_utc = parse_datetime(
+            response_data["access_token_expiration_utc"]
+        )
+        now_utc = datetime.now(timezone.utc)
+        expected_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+        expected_access_token_expiration_utc = now_utc + expected_lifetime
+
+        delta_actual_predicted_expiration_seconds = abs(
+            (
+                (access_token_expiration_utc - expected_access_token_expiration_utc)
+            ).total_seconds()
+        )
+        tolerance_seconds = 60
+        self.assertLess(delta_actual_predicted_expiration_seconds, tolerance_seconds)
+
+        # NB: we'll test the presence and validity of the refresh token via the following test
+
     def test_obtain_and_refresh_token_happy_path(self):
         request_payload_obtain = {
             "email": self.existing_user_email,
@@ -31,14 +69,8 @@ class AuthenticationTests(TestCase):
             "/api/token/obtain/", request_payload_obtain, format="json"
         )
 
-        self.assertEqual(response_obtain.status_code, status.HTTP_200_OK)
-
         response_data_obtain = response_obtain.json()
 
-        access_token = response_data_obtain["access_token"]
-        assert bool(access_token)
-
-        # Refresh the access token:
         refresh_token = response_data_obtain["refresh_token"]
 
         response_refresh = self.client.post(
