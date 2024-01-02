@@ -84,9 +84,14 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
+class PinAdmin(admin.ModelAdmin):
+    list_display = ("unique_id", "title", "author", "created_at")
+    ordering = ("-created_at",)
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Account)
-admin.site.register(Pin)
+admin.site.register(Pin, PinAdmin)
 
 # Since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
