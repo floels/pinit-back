@@ -81,4 +81,4 @@ class Pin(models.Model):
                 return tentative_unique_id_string
 
     def __str__(self):
-        return f"Pin {self.unique_id} by {self.author.username}"
+        return f"Pin {self.unique_id}"
