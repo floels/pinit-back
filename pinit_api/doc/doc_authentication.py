@@ -11,6 +11,9 @@ OBTAIN_TOKEN_SCHEMA = {
             fields={
                 "access_token": serializers.CharField(help_text="Access token"),
                 "refresh_token": serializers.CharField(help_text="Refresh token"),
+                "access_token_expiration_utc": serializers.CharField(
+                    help_text="Access token expiration date (ISO 8601 format, UTC)"
+                ),
             },
         ),
         401: inline_serializer(
