@@ -51,9 +51,11 @@ def get_search_suggestions(request):
 
     sanitized_search_term = "".join(char for char in search_term if char.isalnum())
 
+    lowercase_search_term = sanitized_search_term.lower()
+
     with connection.cursor() as cursor:
         cursor.execute(
-            SQL_QUERY_GET_AUTOCOMPLETE_SUGGESTIONS, [f"{sanitized_search_term}%"]
+            SQL_QUERY_GET_AUTOCOMPLETE_SUGGESTIONS, [f"{lowercase_search_term}%"]
         )
 
         # cursor.fetchall() returns a list of lists, so we need to flatten it:
