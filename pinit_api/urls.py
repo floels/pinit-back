@@ -6,14 +6,15 @@ from drf_spectacular.views import (
 )
 
 from .views import (
-    authentication,
-    signup,
-    owned_accounts,
     accounts,
+    authentication,
+    create_pin,
+    owned_accounts,
     pin_suggestions,
     pins,
+    search_suggestions,
     search,
-    create_pin,
+    signup,
 )
 
 urlpatterns = [
@@ -58,7 +59,9 @@ urlpatterns = [
     ),
     path("search/", search.search_pins, name="search_pins"),
     path(
-        "search/autocomplete/", search.autocomplete_search, name="search_autocomplete"
+        "search-suggestions/",
+        search_suggestions.get_search_suggestions,
+        name="get_search_suggestions",
     ),
     path("create-pin/", create_pin.CreatePinView.as_view(), name="create_pin"),
 ]
