@@ -2,7 +2,7 @@ import pytz
 from datetime import datetime
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as SimpleJWTTokenObtainPairView,
-    TokenRefreshView as SimpleJWTTokenRefreshView,
+    TokenViewBase,
 )
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
@@ -58,7 +58,13 @@ class TokenObtainPairView(SimpleJWTTokenObtainPairView):
         )
 
 
-class TokenRefreshView(SimpleJWTTokenRefreshView):
+# This view is taking inspiration from:
+# https://github.com/jazzband/djangorestframework-simplejwt/blob/master/rest_framework_simplejwt/views.py#L63-L69
+class TokenRefreshView(TokenViewBase):
+    _serializer_class = (
+        "pinit_api.serializers.token_serializers.CustomTokenRefreshSerializer"
+    )
+
     @extend_schema(**SWAGGER_SCHEMAS["token/refresh/"])
     def post(self, request):
         if "refresh_token" not in request.data:
@@ -79,6 +85,17 @@ class TokenRefreshView(SimpleJWTTokenRefreshView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        access_token = serializer.validated_data["access"]
+        access_token = serializer.validated_data["access_token"]
 
-        return Response({"access_token": access_token}, status=status.HTTP_200_OK)
+        access_token_exp = serializer.validated_data["access_token_exp"]
+
+        access_token_expiration_utc = datetime.fromtimestamp(
+            access_token_exp, tz=pytz.UTC
+        )
+
+        return Response(
+            {
+                "access_token": access_token,
+                "access_token_expiration_utc": access_token_expiration_utc.isoformat(),
+            }
+        )

@@ -84,6 +84,9 @@ class AuthenticationTests(TestCase):
         refreshed_access_token = response_data_refresh["access_token"]
         assert bool(refreshed_access_token)
 
+        refreshed_access_expiration_date = response_data_refresh["access_token_expiration_utc"]
+        assert bool(refreshed_access_expiration_date)
+
     def test_obtain_token_wrong_email(self):
         request_payload = {"email": "wrong_email", "password": "somePa$$word"}
 
