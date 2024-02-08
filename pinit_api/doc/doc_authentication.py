@@ -53,6 +53,9 @@ REFRESH_TOKEN_SCHEMA = {
                 "access_token": serializers.CharField(
                     help_text="Refreshed access token"
                 ),
+                "access_token_expiration_utc": serializers.CharField(
+                    help_text="Refreshed access token expiration date (ISO 8601 format, UTC)"
+                ),
             },
         ),
         401: inline_serializer(
