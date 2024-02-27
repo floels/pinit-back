@@ -11,8 +11,6 @@ from pinit_api.models import Pin
 from pinit_api.views.create_pin import compute_file_url_s3
 from pinit_api.utils.constants import (
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
-    ERROR_CODE_MISSING_USERNAME,
-    ERROR_CODE_WRONG_USERNAME,
     ERROR_CODE_PIN_CREATION_FAILED,
 )
 
@@ -27,15 +25,10 @@ class CreatePinTests(APITestCase):
         self.test_username = self.test_account.username
         self.test_user = self.test_account.owner
 
-        self.other_account = AccountFactory()
-        self.other_account_username = self.other_account.username
-
         self.client = APIClient()
         tokens_pair = RefreshToken.for_user(self.test_user)
         access_token = str(tokens_pair.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
-
-        self.headers_with_username = {"HTTP_X_USERNAME": self.test_username}
 
         self.pin_image_file_content = b"pin image data"
         self.pin_image_file = BytesIO(self.pin_image_file_content)
@@ -61,9 +54,7 @@ class CreatePinTests(APITestCase):
             "image_file": self.pin_image_file,
         }
 
-        response = self.client.post(
-            "/api/create-pin/", data, format="multipart", **self.headers_with_username
-        )
+        response = self.client.post("/api/create-pin/", data, format="multipart")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -100,7 +91,6 @@ class CreatePinTests(APITestCase):
                 "/api/create-pin/",
                 data,
                 format="multipart",
-                **self.headers_with_username,
             )
 
             self.assertEqual(
@@ -113,54 +103,10 @@ class CreatePinTests(APITestCase):
 
             self.assertEqual(Pin.objects.count(), 0)
 
-    def test_create_pin_missing_username(self):
-        data = {
-            "title": "Title",
-            "description": "Description",
-            "image_file": self.pin_image_file,
-        }
-
-        response = self.client.post(
-            "/api/create-pin/",
-            data,
-            format="multipart",
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-        self.assertEqual(
-            response_data["errors"], [{"code": ERROR_CODE_MISSING_USERNAME}]
-        )
-
-        self.assertEqual(Pin.objects.count(), 0)
-
-    def test_create_pin_incorrect_username(self):
-        data = {
-            "title": "Title",
-            "description": "Description",
-            "image_file": self.pin_image_file,
-        }
-
-        headers = {"HTTP_X_USERNAME": self.other_account_username}
-
-        response = self.client.post(
-            "/api/create-pin/", data, format="multipart", **headers
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        response_data = response.json()
-        self.assertEqual(response_data["errors"], [{"code": ERROR_CODE_WRONG_USERNAME}])
-
-        self.assertEqual(Pin.objects.count(), 0)
-
     def test_create_pin_missing_file(self):
         data = {"title": "Title", "description": "Description"}
 
-        response = self.client.post(
-            "/api/create-pin/", data, format="multipart", **self.headers_with_username
-        )
+        response = self.client.post("/api/create-pin/", data, format="multipart")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 

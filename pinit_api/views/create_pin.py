@@ -9,8 +9,6 @@ from pinit_api.models import Pin, Account
 from pinit_api.utils.constants import (
     ERROR_CODE_PIN_CREATION_FAILED,
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
-    ERROR_CODE_MISSING_USERNAME,
-    ERROR_CODE_WRONG_USERNAME,
 )
 from pinit_api.doc.doc_create_pin import SWAGGER_SCHEMAS
 from pinit_api.serializers.pin_serializers import PinBasicReadSerializer
@@ -48,20 +46,7 @@ class CreatePinView(generics.CreateAPIView):
 
     @extend_schema(**SWAGGER_SCHEMAS["create-pin/"])
     def post(self, request, *args, **kwargs):
-        username = request.META.get("HTTP_X_USERNAME")
-
-        if not username:
-            response_data = {"errors": [{"code": ERROR_CODE_MISSING_USERNAME}]}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        user = request.user
-
-        account = Account.objects.filter(username=username, owner=user).first()
-
-        if not account:
-            response_data = {"errors": [{"code": ERROR_CODE_WRONG_USERNAME}]}
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
+        account = request.user.account
         title = request.data.get("title")
         description = request.data.get("description")
         uploaded_file = request.FILES.get("image_file")

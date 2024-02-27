@@ -28,8 +28,13 @@ class AccountFactory(factory.django.DjangoModelFactory):
         random_sequence = factory.LazyAttribute(
             lambda _: "%06d" % random.randint(0, 99999999)
         )
+        custom_username = None
 
-    username = factory.LazyAttribute(lambda o: f"user_{o.random_sequence}")
+    username = factory.Maybe(
+        "custom_username",
+        yes_declaration=factory.SelfAttribute("custom_username"),
+        no_declaration=factory.LazyAttribute(lambda o: f"user_{o.random_sequence}"),
+    )
     type = "personal"
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")

@@ -9,6 +9,7 @@ from pinit_api.serializers.user_serializers import (
     ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
     ERROR_CODE_INVALID_BIRTHDATE,
 )
+from pinit_api.tests.testing_utils.factories import AccountFactory
 
 
 class SignupTests(TestCase):
@@ -21,18 +22,14 @@ class SignupTests(TestCase):
             password=self.existing_user_password,
         )
 
-        # Existing users with "newuser", "newuser1" and "newuser2" user name
+        # Existing accounts with "newuser", "newuser1" and "newuser2" usernames
         # (to test suffix incrementation logic):
-        Account.objects.create(
-            username="newuser", type="personal", owner=self.existing_user
-        )
-        Account.objects.create(
-            username="newuser1", type="personal", owner=self.existing_user
-        )
-        Account.objects.create(
-            username="newuser2", type="personal", owner=self.existing_user
-        )
+        AccountFactory.create(custom_username="newuser")
+        AccountFactory.create(custom_username="newuser1")
+        AccountFactory.create(custom_username="newuser2")
+
         self.number_existing_accounts = Account.objects.count()
+        self.number_existing_users = User.objects.count()
 
     def test_signup_happy_path(self):
         request_payload = {
@@ -51,7 +48,7 @@ class SignupTests(TestCase):
         assert bool(refresh_token)
 
         # Check user was created with correct attributes
-        self.assertEqual(User.objects.count(), 2)
+        self.assertEqual(User.objects.count(), self.number_existing_users + 1)
         new_user = User.objects.get(email="new.user@example.com")
         self.assertEqual(str(new_user.birthdate), "1970-01-01")
 
@@ -84,7 +81,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_blank_email(self):
@@ -105,7 +102,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_email_already_signed_up(self):
@@ -126,8 +123,8 @@ class SignupTests(TestCase):
             [{"code": ERROR_CODE_EMAIL_ALREADY_SIGNED_UP}],
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        # Check no user and no account was created:
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_invalid_password(self):
@@ -149,7 +146,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_blank_password(self):
@@ -171,7 +168,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_invalid_birthdate(self):
@@ -193,7 +190,7 @@ class SignupTests(TestCase):
         )
 
         # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)
 
     def test_signup_blank_birthdate(self):
@@ -215,5 +212,5 @@ class SignupTests(TestCase):
         )
 
         # Check no user and no account was created
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), self.number_existing_users)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts)

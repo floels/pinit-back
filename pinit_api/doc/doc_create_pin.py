@@ -6,14 +6,6 @@ SWAGGER_SCHEMAS = {
         "operation_id": "create-pin/",
         "tags": ["Pins"],
         "description": "Creates a new pin.",
-        "parameters": [
-            OpenApiParameter(
-                name="X-Username",
-                location=OpenApiParameter.HEADER,
-                required=True,
-                description="Account username",
-            )
-        ],
         "responses": {201: PinBasicReadSerializer},
     },
 }
