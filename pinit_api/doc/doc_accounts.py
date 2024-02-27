@@ -4,9 +4,9 @@ from ..serializers import AccountSimpleReadSerializer
 
 
 SWAGGER_SCHEMAS = {
-    "owned-accounts/": {
-        "operation_id": "owned-accounts/",
-        "description": "Returns all accounts owned by the user.",
+    "accounts/me/": {
+        "operation_id": "accounts/me/",
+        "description": "Returns the public details for the account owned by the authenticated user.",
         "tags": ["Accounts"],
         "responses": {
             200: inline_serializer(

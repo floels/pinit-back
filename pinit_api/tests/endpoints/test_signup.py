@@ -62,6 +62,19 @@ class SignupTests(TestCase):
         self.assertEqual(new_account.last_name, "User")
         self.assertEqual(new_account.business_name, None)
 
+    def test_signup_forbidden_username(self):
+        request_payload = {
+            "email": "me@example.com",  # yields "me" as default username, which is forbidden
+            "password": "Pa$$w0rd_new_user",
+            "birthdate": "1970-01-01",
+        }
+
+        self.client.post("/api/signup/", request_payload, format="json")
+
+        # Check account was created with correct username:
+        self.assertEqual(Account.objects.count(), self.number_existing_accounts + 1)
+        Account.objects.get(username="me1")
+
     def test_signup_invalid_email(self):
         request_payload = {
             "email": "new.user@example.",

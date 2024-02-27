@@ -12,6 +12,11 @@ from ..models import Account
 from ..serializers import UserCreateSerializer
 from ..doc.doc_signup import SWAGGER_SCHEMAS
 
+FORBIDDEN_USERNAMES = [
+    "me",  # otherwise the /accounts/me/ URL won't work
+    "pinit",
+]
+
 
 def compute_default_account_username_from_email(email):
     username_candidate = compute_username_candidate_from_email(email)
@@ -20,14 +25,19 @@ def compute_default_account_username_from_email(email):
 
 
 def compute_default_account_username_from_candidate(username_candidate):
-    if Account.objects.filter(username=username_candidate):
-        return compute_first_available_username_from_candidate(username_candidate)
+    username_is_already_taken = Account.objects.filter(
+        username=username_candidate
+    ).exists()
 
-    # No account exists with this candidate
+    username_is_forbidden = username_candidate in FORBIDDEN_USERNAMES
+
+    if username_is_already_taken or username_is_forbidden:
+        return compute_derived_username_from_candidate(username_candidate)
+
     return username_candidate
 
 
-def compute_first_available_username_from_candidate(username_candidate):
+def compute_derived_username_from_candidate(username_candidate):
     accounts_with_username_starting_with_candidate = Account.objects.filter(
         username__startswith=username_candidate
     )
@@ -40,14 +50,17 @@ def compute_first_available_username_from_candidate(username_candidate):
     suffix = 1
 
     while True:
-        username = f"{username_candidate}{suffix}"
+        derived_username = f"{username_candidate}{suffix}"
 
-        if username not in usernames_starting_with_candidate:
+        if (
+            derived_username not in usernames_starting_with_candidate
+            and derived_username not in FORBIDDEN_USERNAMES
+        ):
             break
 
         suffix += 1
 
-    return username
+    return derived_username
 
 
 def create_personal_account_for_user(user):

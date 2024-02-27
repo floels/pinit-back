@@ -4,7 +4,6 @@ from moto import mock_s3
 from unittest import mock
 from django.conf import settings
 from rest_framework.test import APITestCase, APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from ..testing_utils import AccountFactory
 from pinit_api.models import Pin
@@ -26,9 +25,7 @@ class CreatePinTests(APITestCase):
         self.test_user = self.test_account.owner
 
         self.client = APIClient()
-        tokens_pair = RefreshToken.for_user(self.test_user)
-        access_token = str(tokens_pair.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        self.client.force_authenticate(self.test_user)
 
         self.pin_image_file_content = b"pin image data"
         self.pin_image_file = BytesIO(self.pin_image_file_content)

@@ -9,7 +9,6 @@ from .views import (
     accounts,
     authentication,
     create_pin,
-    owned_accounts,
     pin_suggestions,
     pins,
     search_suggestions,
@@ -40,7 +39,9 @@ urlpatterns = [
         name=("refresh_token"),
     ),
     path(
-        "owned-accounts/", owned_accounts.get_owned_accounts, name="get_owned_accounts"
+        "accounts/me/",
+        accounts.GetMyAccountDetailsView.as_view(),
+        name="get_my_account_details",
     ),
     path(
         "accounts/<str:username>/",
