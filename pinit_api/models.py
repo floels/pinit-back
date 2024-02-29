@@ -43,7 +43,7 @@ class Account(models.Model):
     description = models.TextField(null=True, blank=True)
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
     saved_pins = models.ManyToManyField(
-        "Pin", through="SavedPin", related_name="saved_by"
+        "Pin", through="PinSave", related_name="saved_by"
     )
 
     @property
@@ -87,10 +87,12 @@ class Pin(models.Model):
         return f"Pin {self.unique_id}"
 
 
-class SavedPin(models.Model):
+class PinSave(models.Model):
     pin = models.ForeignKey(Pin, on_delete=models.CASCADE)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    saved_at = models.DateTimeField(auto_now_add=True)
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="pin_saves"
+    )
+    last_saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("pin", "account")

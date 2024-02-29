@@ -1,8 +1,10 @@
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
 
-from pinit_api.models import Pin
+from pinit_api.models import Pin, PinSave
 from ..testing_utils import PinFactory, AccountFactory
 
 NUMBER_EXISTING_PINS = 150
@@ -74,6 +76,8 @@ class SavePinTests(APITestCase):
         self.assertEqual(self.account.saved_pins.count(), 2)
 
     def test_save_pin_already_saved(self):
+        now = timezone.now()
+
         response = self.client.post(
             f"/api/save-pin/{self.pin_already_saved.unique_id}/"
         )
@@ -81,6 +85,11 @@ class SavePinTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(self.account.saved_pins.count(), 1)
+        self.assertAlmostEqual(
+            self.account.pin_saves.first().last_saved_at,
+            now,
+            delta=timedelta(seconds=1),
+        )
 
     def test_save_pin_not_exists(self):
         non_existing_pin_id = 100_000_000_000_000_000
