@@ -90,8 +90,8 @@ class SavePinTests(APITestCase):
         now = timezone.now()
 
         request_payload = {
-            "pinID": self.pin_to_save.unique_id,
-            "boardID": self.board.unique_id,
+            "pin_id": self.pin_to_save.unique_id,
+            "board_id": self.board.unique_id,
         }
 
         response = self.client.post("/api/save-pin/", request_payload, format="json")
@@ -112,8 +112,8 @@ class SavePinTests(APITestCase):
         now = timezone.now()
 
         request_payload = {
-            "pinID": self.pin_already_saved.unique_id,
-            "boardID": self.board.unique_id,
+            "pin_id": self.pin_already_saved.unique_id,
+            "board_id": self.board.unique_id,
         }
 
         response = self.client.post("/api/save-pin/", request_payload, format="json")
@@ -130,8 +130,8 @@ class SavePinTests(APITestCase):
         non_existing_pin_id = 100_000_000_000_000_000
 
         request_payload = {
-            "pinID": non_existing_pin_id,
-            "boardID": self.board.unique_id,
+            "pin_id": non_existing_pin_id,
+            "board_id": self.board.unique_id,
         }
 
         response = self.client.post("/api/save-pin/", request_payload, format="json")
@@ -148,8 +148,8 @@ class SavePinTests(APITestCase):
         non_existing_board_id = 100_000_000_000_000
 
         request_payload = {
-            "pinID": self.pin_to_save.unique_id,
-            "boardID": non_existing_board_id,
+            "pin_id": self.pin_to_save.unique_id,
+            "board_id": non_existing_board_id,
         }
 
         response = self.client.post("/api/save-pin/", request_payload, format="json")
@@ -166,8 +166,8 @@ class SavePinTests(APITestCase):
 
     def test_save_board_not_owned(self):
         request_payload = {
-            "pinID": self.pin_to_save.unique_id,
-            "boardID": self.board_not_owned.unique_id,
+            "pin_id": self.pin_to_save.unique_id,
+            "board_id": self.board_not_owned.unique_id,
         }
 
         response = self.client.post("/api/save-pin/", request_payload, format="json")
