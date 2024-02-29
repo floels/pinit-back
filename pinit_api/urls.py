@@ -32,7 +32,7 @@ urlpatterns = [
     ),
     path(
         "accounts/<str:username>/",
-        accounts.GetAccountDetailsView.as_view(),
+        accounts.GetAccountPublicDetailsView.as_view(),
         name="get_account_details",
     ),
     path(

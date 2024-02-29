@@ -22,53 +22,56 @@ class GetPinDetailsView(generics.RetrieveAPIView):
 class SavePinView(views.APIView):
     permission_classes = [IsAuthenticated]
 
+    def check_board_author(self, board, user):
+        return board.author == user.account
+
+    def update_last_pin_added_at(self, board, now):
+        board.last_pin_added_at = now
+        board.save()
+
+    def update_or_create_pin_in_board(self, pin, board):
+        now = timezone.now()
+
+        self.update_last_pin_added_at(board, now)
+
+        existing_pin_save = PinInBoard.objects.filter(pin=pin, board=board).first()
+
+        if existing_pin_save:
+            existing_pin_save.last_saved_at = now
+            existing_pin_save.save()
+            return True  # Indicates an update
+        else:
+            board.pins.add(pin)
+            return False  # Indicates a creation
+
     def post(self, request):
         pin_unique_id = request.data.get("pinID")
         board_unique_id = request.data.get("boardID")
 
-        try:
-            pin = Pin.objects.get(unique_id=pin_unique_id)
-        except Pin.DoesNotExist:
+        pin = Pin.objects.filter(unique_id=pin_unique_id).first()
+        if not pin:
             return Response(
                 {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        try:
-            board = Board.objects.get(unique_id=board_unique_id)
-        except Board.DoesNotExist:
+        board = Board.objects.filter(unique_id=board_unique_id).first()
+        if not board:
             return Response(
                 {"errors": [{"code": ERROR_CODE_BOARD_NOT_FOUND}]},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        account = request.user.account
-
-        if board.author != account:
+        if not self.check_board_author(board, request.user):
             return Response(
                 {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        response_body = {
-            "pinID": pin_unique_id,
-            "boardID": board_unique_id,
-        }
-
-        existing_pin_save = PinInBoard.objects.filter(pin=pin, board=board).first()
-
-        if existing_pin_save:
-            existing_pin_save.last_saved_at = timezone.now()
-            existing_pin_save.save()
-
-            return Response(
-                response_body,
-                status=status.HTTP_200_OK,
-            )
-
-        board.pins.add(pin)
+        response_body = {"pinID": pin_unique_id, "boardID": board_unique_id}
+        was_updated = self.update_or_create_pin_in_board(pin, board)
 
         return Response(
             response_body,
-            status=status.HTTP_201_CREATED,
+            status=status.HTTP_200_OK if was_updated else status.HTTP_201_CREATED,
         )
