@@ -10,9 +10,6 @@ class GetAccountDetailsView(generics.RetrieveAPIView):
     serializer_class = AccountWithPublicDetailsReadSerializer
     lookup_field = "username"
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
 
 class GetMyAccountDetailsView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
@@ -20,6 +17,3 @@ class GetMyAccountDetailsView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user.account
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)

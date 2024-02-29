@@ -13,9 +13,6 @@ class GetPinDetailsView(generics.RetrieveAPIView):
     serializer_class = PinWithAuthorReadSerializer
     lookup_field = "unique_id"
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
 
 class SavePinView(views.APIView):
     permission_classes = [IsAuthenticated]

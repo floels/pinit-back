@@ -9,6 +9,3 @@ class GetPinSuggestionsView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Pin.objects.all().order_by("-created_at")
     serializer_class = PinWithAuthorReadSerializer
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)

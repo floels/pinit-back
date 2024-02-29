@@ -19,11 +19,37 @@ paths:
       - null
       responses:
         '200':
+          description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountWithPublicDetailsRead'
-          description: ''
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: Account username
+                  type:
+                    type: string
+                    description: Account type ("personal" or "business")
+                  display_name:
+                    type: string
+                    description: Account display name
+                  profile_picture_url:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: Account profile picture URL
+                  background_picture_url:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: Account background picture URL
+                  description:
+                    type: string
+                    nullable: true
+                    description: Account description
+        '404':
+          description: No account found for this username
   /api/accounts/me/:
     get:
       operationId: accounts/me/
