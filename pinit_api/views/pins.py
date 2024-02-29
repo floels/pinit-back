@@ -45,8 +45,8 @@ class SavePinView(views.APIView):
             return False  # Indicates a creation
 
     def post(self, request):
-        pin_unique_id = request.data.get("pinID")
-        board_unique_id = request.data.get("boardID")
+        pin_unique_id = request.data.get("pin_id")
+        board_unique_id = request.data.get("board_id")
 
         pin = Pin.objects.filter(unique_id=pin_unique_id).first()
         if not pin:
@@ -68,7 +68,7 @@ class SavePinView(views.APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        response_body = {"pinID": pin_unique_id, "boardID": board_unique_id}
+        response_body = {"pin_id": pin_unique_id, "board_id": board_unique_id}
         was_updated = self.update_or_create_pin_in_board(pin, board)
 
         return Response(
