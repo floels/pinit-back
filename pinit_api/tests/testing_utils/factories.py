@@ -60,7 +60,7 @@ class BoardFactory(factory.django.DjangoModelFactory):
         model = Board
 
     title = factory.Faker("sentence", nb_words=4)
-    cover_image_url = factory.Faker("image_url")
+    cover_picture_url = factory.Faker("image_url")
     author = factory.LazyAttribute(
         lambda o: (
             o.factory_parent.author
