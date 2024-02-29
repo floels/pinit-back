@@ -40,10 +40,13 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         # Check response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
         response_data = response.json()
+
         access_token = response_data["access_token"]
         assert bool(access_token)
+
         refresh_token = response_data["refresh_token"]
         assert bool(refresh_token)
 
@@ -54,7 +57,9 @@ class SignupTests(TestCase):
 
         # Check account was created with correct attributes
         self.assertEqual(Account.objects.count(), self.number_existing_accounts + 1)
+
         new_account = Account.objects.get(owner=new_user)
+
         self.assertEqual(new_account.type, "personal")
         self.assertEqual(new_account.username, "newuser3")
         self.assertEqual(new_account.initial, "N")

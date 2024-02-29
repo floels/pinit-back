@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
 
@@ -93,7 +94,8 @@ def sign_up(request):
             {
                 "access_token": str(tokens_pair.access_token),
                 "refresh_token": str(tokens_pair),
-            }
+            },
+            status=status.HTTP_201_CREATED,
         )
 
     flattened_errors = []
