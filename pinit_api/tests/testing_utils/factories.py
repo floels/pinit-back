@@ -1,7 +1,7 @@
 import factory
 import random
 from datetime import date
-from pinit_api.models import User, Account, Pin
+from pinit_api.models import User, Account, Pin, Board
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -51,4 +51,13 @@ class PinFactory(factory.django.DjangoModelFactory):
     title = factory.Faker("sentence", nb_words=5, variable_nb_words=True)
     description = factory.Faker("text")
     image_url = factory.Faker("image_url")
+    author = factory.SubFactory(AccountFactory)
+
+
+class BoardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Board
+
+    title = factory.Faker("sentence", nb_words=4)
+    cover_image_url = factory.Faker("image_url")
     author = factory.SubFactory(AccountFactory)

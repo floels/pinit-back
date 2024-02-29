@@ -17,7 +17,7 @@ class User(AbstractBaseUser):
     EMAIL_FIELD = "email"
 
     def __str__(self):
-        return self.email
+        return f"User {self.email}"
 
     def has_perm(self, perm, obj=None):
         return True
@@ -42,9 +42,6 @@ class Account(models.Model):
     background_picture_url = models.URLField(blank=True, null=True)
     description = models.TextField(null=True, blank=True)
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
-    saved_pins = models.ManyToManyField(
-        "Pin", through="PinSave", related_name="saved_by"
-    )
 
     @property
     def display_name(self):
@@ -54,7 +51,7 @@ class Account(models.Model):
         return self.business_name
 
     def __str__(self):
-        return self.username
+        return f"Account {self.username}"
 
 
 class Pin(models.Model):
@@ -73,13 +70,10 @@ class Pin(models.Model):
     @staticmethod
     def generate_unique_id():
         while True:
-            # Generate a random 18-digit number:
             tentative_unique_id = random.randint(
                 100_000_000_000_000_000, 999_999_999_999_999_999
             )
-
             tentative_unique_id_string = str(tentative_unique_id)
-
             if not Pin.objects.filter(unique_id=tentative_unique_id_string).exists():
                 return tentative_unique_id_string
 
@@ -87,15 +81,41 @@ class Pin(models.Model):
         return f"Pin {self.unique_id}"
 
 
-class PinSave(models.Model):
+class Board(models.Model):
+    unique_id = models.CharField(max_length=15, unique=True, editable=False)
+    title = models.CharField(max_length=200)
+    cover_image_url = models.URLField(null=True, blank=True)
+    author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="boards")
+    pins = models.ManyToManyField(Pin, through="PinInBoard", related_name="boards")
+
+    def save(self, *args, **kwargs):
+        if not self.unique_id:
+            self.unique_id = self.generate_unique_id()
+        super(Board, self).save(*args, **kwargs)
+
+    @staticmethod
+    def generate_unique_id():
+        while True:
+            tentative_unique_id = random.randint(
+                100_000_000_000_000, 999_999_999_999_999
+            )
+            tentative_unique_id_string = str(tentative_unique_id)
+            if not Board.objects.filter(unique_id=tentative_unique_id_string).exists():
+                return tentative_unique_id_string
+
+    def __str__(self):
+        return f"Board {self.unique_id}"
+
+
+class PinInBoard(models.Model):
     pin = models.ForeignKey(Pin, on_delete=models.CASCADE)
-    account = models.ForeignKey(
-        Account, on_delete=models.CASCADE, related_name="pin_saves"
+    board = models.ForeignKey(
+        Board, on_delete=models.CASCADE, related_name="pins_in_board"
     )
     last_saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("pin", "account")
+        unique_together = ("pin", "board")
 
     def __str__(self):
-        return f"{self.pin} saved by {self.account}"
+        return f"{self.pin} in {self.board}"
