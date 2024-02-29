@@ -21,7 +21,7 @@ class GetMyAccountDetailsView(generics.RetrieveAPIView):
         account = request.user.account
         account_serializer = self.get_serializer(account)
 
-        boards = Board.objects.filter(author=account)
+        boards = Board.objects.filter(author=account).order_by("-last_pin_added_at")
         boards_serializer = BoardSerializer(boards, many=True)
 
         response_data = account_serializer.data
