@@ -17,11 +17,16 @@ class GetMyAccountDetailsView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AccountWithPublicDetailsReadSerializer
 
+    def get_ordered_boards_for_account(self, account):
+        return Board.objects.filter(author=account).order_by(
+            "-last_pin_added_at", "-created_at"
+        )
+
     def get(self, request):
         account = request.user.account
         account_serializer = self.get_serializer(account)
 
-        boards = Board.objects.filter(author=account).order_by("-last_pin_added_at")
+        boards = self.get_ordered_boards_for_account(account)
         boards_serializer = BoardSerializer(boards, many=True)
 
         response_data = account_serializer.data
