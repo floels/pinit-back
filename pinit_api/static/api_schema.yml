@@ -6,7 +6,7 @@ paths:
   /api/accounts/{username}/:
     get:
       operationId: accounts/<username>/
-      description: Returns the public details for account with username 'username'.
+      description: Get the public details for account with username 'username'.
       parameters:
       - in: path
         name: username
@@ -28,12 +28,15 @@ paths:
                   username:
                     type: string
                     description: Account username
+                    example: "johndoe"
                   type:
                     type: string
                     description: Account type ("personal" or "business")
+                    example: "personal"
                   display_name:
                     type: string
                     description: Account display name
+                    example: "John Doe"
                   profile_picture_url:
                     type: string
                     format: uri
@@ -53,7 +56,7 @@ paths:
   /api/accounts/me/:
     get:
       operationId: accounts/me/
-      description: Returns the public details for the account owned by the authenticated
+      description: Get the public details for the account owned by the authenticated
         user.
       tags:
       - Accounts
@@ -61,55 +64,94 @@ paths:
       - jwtAuth: []
       responses:
         '200':
+          description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsSuccessResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    type: personal
-                    username: johndoe
-                    display_name: John Doe
-                    initial: J
-                  summary: Successful Response
-          description: ''
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: Account username
+                    example: "johndoe"
+                  type:
+                    type: string
+                    description: Account type ("personal" or "business")
+                    example: "personal"
+                  initial:
+                    type: string
+                    description: Account initial
+                    example: "J"
+                  display_name:
+                    type: string
+                    description: Account display name
+                    example: "John Doe"
+                  profile_picture_url:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: Account profile picture URL
+        '401':
+          description: Failed authentication
   /api/create-pin/:
     post:
       operationId: create-pin/
-      description: Creates a new pin.
+      description: Create a new pin.
       tags:
       - Pins
       requestBody:
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePinRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CreatePinRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CreatePinRequest'
+              type: object
+              properties:
+                image_file:
+                  type: string
+                  format: uri
+                title:
+                  type: string
+                description:
+                  type: string
+              required:
+              - image_file
         required: true
       security:
       - jwtAuth: []
       responses:
         '201':
+          description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinBasicRead'
-          description: ''
+                type: object
+                properties:
+                  unique_id:
+                    type: string
+                    description: Unique ID of created pin
+                    example: "837672678962535495"
+                  image_url:
+                    type: string
+                    format: uri
+                    description: URL of created pin's image
+                  title:
+                    type: string
+                    description: Title of created pin
+                    example: "Created pin title"
+                  description:
+                    type: string
+                    description: Description of created pin
+          maxLength: 200
+        '401':
+          description: Failed authentication
   /api/pin-suggestions/:
     get:
       operationId: pin-suggestions/
-      description: Returns a list of pin suggestions for the user.
+      description: Get the list of pin suggestions for the authenticated user.
       parameters:
       - name: page
         required: false
         in: query
-        description: A page number within the paginated result set.
+        description: Page number. Default is 1.
         schema:
           type: integer
       tags:
@@ -121,7 +163,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPinWithAuthorReadList'
+                $ref: '#/components/schemas/PaginatedPinWithAuthorList'
           description: ''
   /api/pins/{unique_id}/:
     get:
@@ -142,7 +184,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinWithAuthorRead'
+                $ref: '#/components/schemas/PinWithAuthor'
           description: ''
   /api/save-pin/{unique_id}/:
     post:
@@ -324,23 +366,21 @@ paths:
           description: ''
 components:
   schemas:
-    AccountRead:
+    AccountData:
       type: object
       properties:
         username:
           type: string
-          maxLength: 100
+          description: Account username
+          example: "johndoe"
         display_name:
           type: string
-          readOnly: true
+          description: Account display name
+          example: "John Doe"
         profile_picture_url:
           type: string
           format: uri
-          nullable: true
-          maxLength: 200
-      required:
-      - display_name
-      - username
+          description: "Account profile picture URL"
     AccountSimpleRead:
       type: object
       properties:
@@ -416,12 +456,12 @@ components:
           format: uri
       required:
       - image_file
-    PaginatedPinWithAuthorReadList:
+    PaginatedPinWithAuthorList:
       type: object
       properties:
         count:
           type: integer
-          example: 123
+          example: 50
         next:
           type: string
           nullable: true
@@ -435,7 +475,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/PinWithAuthorRead'
+            $ref: '#/components/schemas/PinWithAuthor'
     PinBasicRead:
       type: object
       properties:
@@ -456,31 +496,27 @@ components:
           nullable: true
       required:
       - unique_id
-    PinWithAuthorRead:
+    PinWithAuthor:
       type: object
       properties:
         unique_id:
           type: string
-          readOnly: true
+          description: Pin unique ID
+          example: "837672678962535495"
         image_url:
           type: string
           format: uri
-          nullable: true
-          maxLength: 200
         title:
           type: string
-          nullable: true
-          maxLength: 200
+          description: Pin title
+          example: "Pin title"
         description:
           type: string
-          nullable: true
+          description: Pin description
         author:
+          description: Pin author data
           allOf:
-          - $ref: '#/components/schemas/AccountRead'
-          readOnly: true
-      required:
-      - author
-      - unique_id
+          - $ref: '#/components/schemas/AccountData'
     SearchAutocompleteSuccessfulResponse:
       type: object
       properties:
@@ -498,7 +534,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/PinWithAuthorRead'
+            $ref: '#/components/schemas/PinWithAuthor'
       required:
       - results
     SignupRequest:
