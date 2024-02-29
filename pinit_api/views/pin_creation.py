@@ -10,7 +10,7 @@ from pinit_api.utils.constants import (
     ERROR_CODE_PIN_CREATION_FAILED,
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
 )
-from pinit_api.doc.doc_create_pin import SWAGGER_SCHEMAS
+from pinit_api.doc.doc_pin_creation import SWAGGER_SCHEMAS
 from pinit_api.serializers.pin_serializers import PinBasicReadSerializer
 
 

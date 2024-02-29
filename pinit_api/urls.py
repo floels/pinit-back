@@ -8,7 +8,7 @@ from drf_spectacular.views import (
 from .views import (
     accounts,
     authentication,
-    create_pin,
+    pin_creation,
     pin_suggestions,
     pins,
     search_suggestions,
@@ -64,5 +64,10 @@ urlpatterns = [
         search_suggestions.get_search_suggestions,
         name="get_search_suggestions",
     ),
-    path("create-pin/", create_pin.CreatePinView.as_view(), name="create_pin"),
+    path("create-pin/", pin_creation.CreatePinView.as_view(), name="create_pin"),
+    path(
+        "save-pin/<str:unique_id>/",
+        pins.SavePinView.as_view(),
+        name="save_pin",
+    ),
 ]
