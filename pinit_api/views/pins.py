@@ -1,9 +1,10 @@
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, views
 
-from ..models import Pin
+from ..models import Pin, PinSave
 from ..serializers import PinWithAuthorReadSerializer, PinBasicReadSerializer
 from ..utils.constants import ERROR_CODE_NOT_FOUND
 
@@ -27,6 +28,7 @@ class SavePinView(views.APIView):
             )
 
         pin_serializer = PinBasicReadSerializer(pin)
+
         account = request.user.account
 
         response_body = {
@@ -34,9 +36,12 @@ class SavePinView(views.APIView):
             "account": account.username,
         }
 
-        pin_already_saved = pin in account.saved_pins.all()
+        existing_pin_save = PinSave.objects.filter(pin=pin, account=account).first()
 
-        if pin_already_saved:
+        if existing_pin_save:
+            existing_pin_save.last_saved_at = timezone.now()
+            existing_pin_save.save()
+
             return Response(
                 response_body,
                 status=status.HTTP_200_OK,
