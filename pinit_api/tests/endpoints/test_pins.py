@@ -70,7 +70,25 @@ class SavePinTests(APITestCase):
 
         self.board_not_owned = BoardFactory()
 
+    def check_board_last_pin_added_at(self, board):
+        board.refresh_from_db()
+
+        self.assertAlmostEqual(
+            board.last_pin_added_at,
+            timezone.now(),
+            delta=timedelta(seconds=1),
+        )
+
+    def check_pin_save_last_saved_at(self, pin_save):
+        self.assertAlmostEqual(
+            pin_save.last_saved_at,
+            timezone.now(),
+            delta=timedelta(seconds=1),
+        )
+
     def test_save_pin_happy_path(self):
+        now = timezone.now()
+
         request_payload = {
             "pinID": self.pin_to_save.unique_id,
             "boardID": self.board.unique_id,
@@ -81,6 +99,14 @@ class SavePinTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertEqual(self.board.pins.count(), 2)
+
+        created_pin_in_board = self.board.pins_in_board.order_by(
+            "-last_saved_at"
+        ).first()
+
+        self.check_board_last_pin_added_at(self.board)
+
+        self.check_pin_save_last_saved_at(created_pin_in_board)
 
     def test_save_pin_already_saved(self):
         now = timezone.now()
@@ -94,13 +120,11 @@ class SavePinTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertAlmostEqual(
-            self.board.pins_in_board.first().last_saved_at,
-            now,
-            delta=timedelta(seconds=1),
-        )
-
         self.assertEqual(self.board.pins.count(), 1)
+
+        self.check_board_last_pin_added_at(self.board)
+
+        self.check_pin_save_last_saved_at(self.board.pins_in_board.first())
 
     def test_save_pin_doesnt_exist(self):
         non_existing_pin_id = 100_000_000_000_000_000

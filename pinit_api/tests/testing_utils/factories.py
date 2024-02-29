@@ -39,6 +39,7 @@ class AccountFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     initial = factory.LazyAttribute(lambda account: account.first_name[0].upper())
+    profile_picture_url = factory.Faker("image_url")
     owner = factory.SubFactory(
         UserFactory, random_sequence=factory.SelfAttribute("..random_sequence")
     )
@@ -60,4 +61,10 @@ class BoardFactory(factory.django.DjangoModelFactory):
 
     title = factory.Faker("sentence", nb_words=4)
     cover_image_url = factory.Faker("image_url")
-    author = factory.SubFactory(AccountFactory)
+    author = factory.LazyAttribute(
+        lambda o: (
+            o.factory_parent.author
+            if hasattr(o.factory_parent, "author")
+            else AccountFactory()
+        )
+    )
