@@ -66,6 +66,11 @@ class SavePinTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        response_data = response.json()
+
+        self.assertEqual(response_data["pin"]["unique_id"], self.pin_to_save.unique_id)
+        self.assertEqual(response_data["account"], self.account.username)
+
         self.assertEqual(self.account.saved_pins.count(), 2)
 
     def test_save_pin_already_saved(self):

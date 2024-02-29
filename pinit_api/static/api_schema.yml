@@ -2,7 +2,6 @@ openapi: 3.0.3
 info:
   title: PinIt API
   version: 1.0.0
-  description: API for the PinIt web app
 paths:
   /api/accounts/{username}/:
     get:
@@ -25,11 +24,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccountWithPublicDetailsRead'
           description: ''
+  /api/accounts/me/:
+    get:
+      operationId: accounts/me/
+      description: Returns the public details for the account owned by the authenticated
+        user.
+      tags:
+      - Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsSuccessResponse'
+              examples:
+                SuccessfulResponse:
+                  value:
+                    type: personal
+                    username: johndoe
+                    display_name: John Doe
+                    initial: J
+                  summary: Successful Response
+          description: ''
   /api/create-pin/:
     post:
-      operationId: create_pin_create
+      operationId: create-pin/
+      description: Creates a new pin.
       tags:
-      - create-pin
+      - Pins
       requestBody:
         content:
           application/json:
@@ -49,30 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePinRequest'
-          description: ''
-  /api/owned-accounts/:
-    get:
-      operationId: owned-accounts/
-      description: Returns all accounts owned by the user.
-      tags:
-      - Accounts
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountsSuccessResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    type: personal
-                    username: johndoe
-                    display_name: John Doe
-                    initial: J
-                  summary: Successful Response
+                $ref: '#/components/schemas/PinBasicRead'
           description: ''
   /api/pin-suggestions/:
     get:
@@ -117,6 +118,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/PinWithAuthorRead'
           description: ''
+  /api/save-pin/{unique_id}/:
+    post:
+      operationId: save-pin/<unique_id>/
+      description: Save pin with unique ID 'unique_id' in the account of the authenticated
+        user.
+      parameters:
+      - in: path
+        name: unique_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Pins
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                description: Pin successfully saved.
+                content:
+                  application/json:
+                    example:
+                      message: Pin already saved.
+                      data:
+                        pin:
+                          id: example_id
+                          title: Example Pin Title
+                          description: An example description of the pin.
+                        username: exampleUser
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Pin was already saved.
+          description: ''
   /api/search/:
     get:
       operationId: search/
@@ -139,10 +178,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SearchSuccessResponse'
           description: ''
-  /api/search/autocomplete/:
+  /api/search-suggestions/:
     get:
-      operationId: search/autocomplete/
-      description: Takes a search term and returns a list of search autocomplete suggestions
+      operationId: search-suggestions/
+      description: Takes a search term and returns a list of autocomplete suggestions
         for this term.
       parameters:
       - in: query
@@ -230,9 +269,6 @@ paths:
   /api/token/refresh/:
     post:
       operationId: token/refresh/
-      description: |-
-        Takes a refresh type JSON web token and returns an access type JSON web
-        token if the refresh token is valid.
       tags:
       - Sign-up and authentication
       requestBody:
@@ -347,17 +383,13 @@ components:
       properties:
         title:
           type: string
-          maxLength: 200
         description:
           type: string
-          maxLength: 1000
         image_file:
           type: string
           format: uri
       required:
-      - description
       - image_file
-      - title
     PaginatedPinWithAuthorReadList:
       type: object
       properties:
@@ -378,6 +410,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PinWithAuthorRead'
+    PinBasicRead:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          readOnly: true
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        title:
+          type: string
+          nullable: true
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+      required:
+      - unique_id
     PinWithAuthorRead:
       type: object
       properties:
@@ -410,8 +462,8 @@ components:
           type: array
           items:
             type: string
-            description: Autocomplete suggestion
-          description: List of autocomplete suggestions
+            description: Search suggestion
+          description: List of search suggestions
       required:
       - results
     SearchSuccessResponse:
@@ -519,8 +571,12 @@ components:
         refresh_token:
           type: string
           description: Refresh token
+        access_token_expiration_utc:
+          type: string
+          description: Access token expiration date (ISO 8601 format, UTC)
       required:
       - access_token
+      - access_token_expiration_utc
       - refresh_token
     TokenObtainUnauthorizedResponse:
       type: object
@@ -567,8 +623,12 @@ components:
         access_token:
           type: string
           description: Refreshed access token
+        access_token_expiration_utc:
+          type: string
+          description: Refreshed access token expiration date (ISO 8601 format, UTC)
       required:
       - access_token
+      - access_token_expiration_utc
     TokenRefreshUnauthorizedResponse:
       type: object
       properties:

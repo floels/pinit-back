@@ -2,9 +2,6 @@ from django.db import connection
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema
-
-from ..doc.doc_search_suggestions import SWAGGER_SCHEMAS
 
 
 NUMBER_SUGGESTIONS_RETURNED = 12
@@ -38,7 +35,6 @@ LIMIT {NUMBER_SUGGESTIONS_RETURNED};
 """
 
 
-@extend_schema(**SWAGGER_SCHEMAS["search-suggestions/"])
 @api_view(["GET"])
 def get_search_suggestions(request):
     search_term = request.GET.get("search", None)

@@ -1,7 +1,6 @@
 import os
 import boto3
 from django.conf import settings
-from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics, status, serializers
@@ -10,7 +9,6 @@ from pinit_api.utils.constants import (
     ERROR_CODE_PIN_CREATION_FAILED,
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
 )
-from pinit_api.doc.doc_pin_creation import SWAGGER_SCHEMAS
 from pinit_api.serializers.pin_serializers import PinBasicReadSerializer
 
 
@@ -40,11 +38,7 @@ class CreatePinRequestSerializer(serializers.Serializer):
 
 class CreatePinView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CreatePinRequestSerializer  # this is merely for
-    # drf_spectacular to not throw an error for this view. We don't
-    # actually use this 'serializer_class' in the method below.
 
-    @extend_schema(**SWAGGER_SCHEMAS["create-pin/"])
     def post(self, request, *args, **kwargs):
         account = request.user.account
         title = request.data.get("title")
