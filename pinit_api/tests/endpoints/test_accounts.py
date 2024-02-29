@@ -70,7 +70,7 @@ class GetMyAccountDetailsTests(APITestCase):
             self.assertEqual(response_data["boards"][i]["unique_id"], board.unique_id)
             self.assertEqual(response_data["boards"][i]["title"], board.title)
             self.assertEqual(
-                response_data["boards"][i]["cover_image_url"], board.cover_image_url
+                response_data["boards"][i]["cover_picture_url"], board.cover_picture_url
             )
 
     def test_get_my_account_details_happy_path(self):

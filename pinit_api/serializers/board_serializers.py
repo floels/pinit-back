@@ -5,4 +5,4 @@ from ..models import Board
 class BoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ["unique_id", "title", "cover_image_url"]
+        fields = ["unique_id", "title", "cover_picture_url"]
