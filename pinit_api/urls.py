@@ -1,14 +1,10 @@
 from django.urls import path
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularRedocView,
-    SpectacularSwaggerView,
-)
+from django.views.generic import TemplateView
 
 from .views import (
     accounts,
     authentication,
-    create_pin,
+    pin_creation,
     pin_suggestions,
     pins,
     search_suggestions,
@@ -17,16 +13,7 @@ from .views import (
 )
 
 urlpatterns = [
-    # API documentation
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "schema/swagger-ui/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
-    path(
-        "schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
-    ),
+    path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
     path("signup/", signup.sign_up, name="sign_up"),
     path(
         "token/obtain/",
@@ -64,5 +51,10 @@ urlpatterns = [
         search_suggestions.get_search_suggestions,
         name="get_search_suggestions",
     ),
-    path("create-pin/", create_pin.CreatePinView.as_view(), name="create_pin"),
+    path("create-pin/", pin_creation.CreatePinView.as_view(), name="create_pin"),
+    path(
+        "save-pin/<str:unique_id>/",
+        pins.SavePinView.as_view(),
+        name="save_pin",
+    ),
 ]

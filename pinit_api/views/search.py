@@ -2,10 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
-from drf_spectacular.utils import extend_schema
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
-from ..doc.doc_search import SWAGGER_SCHEMAS
 from ..models import Pin
 from ..serializers import PinWithAuthorReadSerializer
 
@@ -13,7 +11,6 @@ from ..serializers import PinWithAuthorReadSerializer
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"
 
 
-@extend_schema(**SWAGGER_SCHEMAS["search/"])
 @api_view(["GET"])
 def search_pins(request):
     search_term = request.GET.get("q", None)

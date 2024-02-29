@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
-from drf_spectacular.utils import extend_schema
 
 from ..utils import (
     compute_username_candidate_from_email,
@@ -10,7 +9,6 @@ from ..utils import (
 )
 from ..models import Account
 from ..serializers import UserCreateSerializer
-from ..doc.doc_signup import SWAGGER_SCHEMAS
 
 FORBIDDEN_USERNAMES = [
     "me",  # otherwise the /accounts/me/ URL won't work
@@ -80,7 +78,6 @@ def create_personal_account_for_user(user):
     )
 
 
-@extend_schema(**SWAGGER_SCHEMAS["signup/"])
 @api_view(["POST"])
 def sign_up(request):
     user_serializer = UserCreateSerializer(data=request.data)

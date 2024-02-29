@@ -3,7 +3,7 @@ from rest_framework import status
 from django.conf import settings
 
 from pinit_api.models import Pin
-from ..testing_utils import PinFactory
+from ..testing_utils import PinFactory, AccountFactory
 
 NUMBER_EXISTING_PINS = 150
 PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
@@ -47,3 +47,46 @@ class GetPinDetailsTests(APITestCase):
         response = self.client.get(f"/api/pins/{non_existing_unique_id}/")
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class SavePinTests(APITestCase):
+    def setUp(self):
+        self.account = AccountFactory()
+
+        self.pin_already_saved = PinFactory()
+        self.account.saved_pins.add(self.pin_already_saved)
+
+        self.pin_to_save = PinFactory()
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.account.owner)
+
+    def test_save_pin_happy_path(self):
+        response = self.client.post(f"/api/save-pin/{self.pin_to_save.unique_id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response_data = response.json()
+
+        self.assertEqual(response_data["pin"]["unique_id"], self.pin_to_save.unique_id)
+        self.assertEqual(response_data["account"], self.account.username)
+
+        self.assertEqual(self.account.saved_pins.count(), 2)
+
+    def test_save_pin_already_saved(self):
+        response = self.client.post(
+            f"/api/save-pin/{self.pin_already_saved.unique_id}/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(self.account.saved_pins.count(), 1)
+
+    def test_save_pin_not_exists(self):
+        non_existing_pin_id = 100_000_000_000_000_000
+
+        response = self.client.post(f"/api/save-pin/{non_existing_pin_id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        self.assertEqual(self.account.saved_pins.count(), 1)

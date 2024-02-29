@@ -42,6 +42,9 @@ class Account(models.Model):
     background_picture_url = models.URLField(blank=True, null=True)
     description = models.TextField(null=True, blank=True)
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
+    saved_pins = models.ManyToManyField(
+        "Pin", through="SavedPin", related_name="saved_by"
+    )
 
     @property
     def display_name(self):
@@ -82,3 +85,15 @@ class Pin(models.Model):
 
     def __str__(self):
         return f"Pin {self.unique_id}"
+
+
+class SavedPin(models.Model):
+    pin = models.ForeignKey(Pin, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("pin", "account")
+
+    def __str__(self):
+        return f"{self.pin} saved by {self.account}"
