@@ -4,8 +4,13 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 
-from pinit_api.models import Pin, PinSave
-from ..testing_utils import PinFactory, AccountFactory
+from pinit_api.models import Pin
+from ..testing_utils import PinFactory, BoardFactory
+from pinit_api.utils.constants import (
+    ERROR_CODE_PIN_NOT_FOUND,
+    ERROR_CODE_BOARD_NOT_FOUND,
+    ERROR_CODE_FORBIDDEN,
+)
 
 NUMBER_EXISTING_PINS = 150
 PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
@@ -53,49 +58,100 @@ class GetPinDetailsTests(APITestCase):
 
 class SavePinTests(APITestCase):
     def setUp(self):
-        self.account = AccountFactory()
+        self.board = BoardFactory()
 
         self.pin_already_saved = PinFactory()
-        self.account.saved_pins.add(self.pin_already_saved)
+        self.board.pins.add(self.pin_already_saved)
 
         self.pin_to_save = PinFactory()
 
         self.client = APIClient()
-        self.client.force_authenticate(user=self.account.owner)
+        self.client.force_authenticate(user=self.board.author.owner)
+
+        self.board_not_owned = BoardFactory()
 
     def test_save_pin_happy_path(self):
-        response = self.client.post(f"/api/save-pin/{self.pin_to_save.unique_id}/")
+        request_payload = {
+            "pinID": self.pin_to_save.unique_id,
+            "boardID": self.board.unique_id,
+        }
+
+        response = self.client.post("/api/save-pin/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        response_data = response.json()
-
-        self.assertEqual(response_data["pin"]["unique_id"], self.pin_to_save.unique_id)
-        self.assertEqual(response_data["account"], self.account.username)
-
-        self.assertEqual(self.account.saved_pins.count(), 2)
+        self.assertEqual(self.board.pins.count(), 2)
 
     def test_save_pin_already_saved(self):
         now = timezone.now()
 
-        response = self.client.post(
-            f"/api/save-pin/{self.pin_already_saved.unique_id}/"
-        )
+        request_payload = {
+            "pinID": self.pin_already_saved.unique_id,
+            "boardID": self.board.unique_id,
+        }
+
+        response = self.client.post("/api/save-pin/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(self.account.saved_pins.count(), 1)
         self.assertAlmostEqual(
-            self.account.pin_saves.first().last_saved_at,
+            self.board.pins_in_board.first().last_saved_at,
             now,
             delta=timedelta(seconds=1),
         )
 
-    def test_save_pin_not_exists(self):
+        self.assertEqual(self.board.pins.count(), 1)
+
+    def test_save_pin_doesnt_exist(self):
         non_existing_pin_id = 100_000_000_000_000_000
 
-        response = self.client.post(f"/api/save-pin/{non_existing_pin_id}/")
+        request_payload = {
+            "pinID": non_existing_pin_id,
+            "boardID": self.board.unique_id,
+        }
+
+        response = self.client.post("/api/save-pin/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-        self.assertEqual(self.account.saved_pins.count(), 1)
+        response_data = response.json()
+
+        self.assertEqual(response_data["errors"], [{"code": ERROR_CODE_PIN_NOT_FOUND}])
+
+        self.assertEqual(self.board.pins.count(), 1)
+
+    def test_save_board_doesnt_exist(self):
+        non_existing_board_id = 100_000_000_000_000
+
+        request_payload = {
+            "pinID": self.pin_to_save.unique_id,
+            "boardID": non_existing_board_id,
+        }
+
+        response = self.client.post("/api/save-pin/", request_payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response_data = response.json()
+
+        self.assertEqual(
+            response_data["errors"], [{"code": ERROR_CODE_BOARD_NOT_FOUND}]
+        )
+
+        self.assertEqual(self.board.pins.count(), 1)
+
+    def test_save_board_not_owned(self):
+        request_payload = {
+            "pinID": self.pin_to_save.unique_id,
+            "boardID": self.board_not_owned.unique_id,
+        }
+
+        response = self.client.post("/api/save-pin/", request_payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response_data = response.json()
+
+        self.assertEqual(response_data["errors"], [{"code": ERROR_CODE_FORBIDDEN}])
+
+        self.assertEqual(self.board.pins.count(), 1)

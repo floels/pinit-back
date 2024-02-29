@@ -1,7 +1,6 @@
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
-from pinit_api.utils.constants import ERROR_CODE_NOT_FOUND
 from ..testing_utils import AccountFactory
 
 

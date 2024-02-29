@@ -53,7 +53,7 @@ urlpatterns = [
     ),
     path("create-pin/", pin_creation.CreatePinView.as_view(), name="create_pin"),
     path(
-        "save-pin/<str:unique_id>/",
+        "save-pin/",
         pins.SavePinView.as_view(),
         name="save_pin",
     ),

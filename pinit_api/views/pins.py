@@ -4,9 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, views
 
-from ..models import Pin, PinSave
-from ..serializers import PinWithAuthorReadSerializer, PinBasicReadSerializer
-from ..utils.constants import ERROR_CODE_NOT_FOUND
+from ..models import Pin, Board, PinInBoard
+from ..serializers import PinWithAuthorReadSerializer
+from ..utils.constants import (
+    ERROR_CODE_PIN_NOT_FOUND,
+    ERROR_CODE_BOARD_NOT_FOUND,
+    ERROR_CODE_FORBIDDEN,
+)
 
 
 class GetPinDetailsView(generics.RetrieveAPIView):
@@ -18,25 +22,40 @@ class GetPinDetailsView(generics.RetrieveAPIView):
 class SavePinView(views.APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, unique_id, *args, **kwargs):
+    def post(self, request):
+        pin_unique_id = request.data.get("pinID")
+        board_unique_id = request.data.get("boardID")
+
         try:
-            pin = Pin.objects.get(unique_id=unique_id)
+            pin = Pin.objects.get(unique_id=pin_unique_id)
         except Pin.DoesNotExist:
             return Response(
-                {"errors": [{"code": ERROR_CODE_NOT_FOUND}]},
+                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        pin_serializer = PinBasicReadSerializer(pin)
+        try:
+            board = Board.objects.get(unique_id=board_unique_id)
+        except Board.DoesNotExist:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_BOARD_NOT_FOUND}]},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         account = request.user.account
 
+        if board.author != account:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         response_body = {
-            "pin": pin_serializer.data,
-            "account": account.username,
+            "pinID": pin_unique_id,
+            "boardID": board_unique_id,
         }
 
-        existing_pin_save = PinSave.objects.filter(pin=pin, account=account).first()
+        existing_pin_save = PinInBoard.objects.filter(pin=pin, board=board).first()
 
         if existing_pin_save:
             existing_pin_save.last_saved_at = timezone.now()
@@ -47,7 +66,7 @@ class SavePinView(views.APIView):
                 status=status.HTTP_200_OK,
             )
 
-        account.saved_pins.add(pin)
+        board.pins.add(pin)
 
         return Response(
             response_body,
