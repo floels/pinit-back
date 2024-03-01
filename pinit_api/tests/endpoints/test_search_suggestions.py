@@ -24,8 +24,11 @@ class SearchSuggestionsTests(APITestCase):
         )
 
     def test_get_search_suggestions_happy_path(self):
-        response = self.client.get("/api/search-suggestions/", {"search": "beach"})
+        response = self.get(search="beach")
 
+        self.check_response_happy_path(response=response)
+
+    def check_response_happy_path(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
@@ -40,9 +43,15 @@ class SearchSuggestionsTests(APITestCase):
             ["beach", "beacha", "beacheresque", "beachiful", "beacho", "beachy"],
         )
 
-    def test_get_search_suggestions_missing_search_param(self):
-        response = self.client.get("/api/search-suggestions/")
+    def get(self, search=""):
+        return self.client.get("/api/search-suggestions/", {"search": search})
 
+    def test_get_search_suggestions_missing_search_param(self):
+        response = self.get(search="")
+
+        self.check_response_missing_search_param(response=response)
+
+    def check_response_missing_search_param(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()

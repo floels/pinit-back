@@ -9,7 +9,7 @@ from pinit_api.lib.constants import (
     ERROR_CODE_PIN_CREATION_FAILED,
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
 )
-from pinit_api.serializers.pin_serializers import PinBasicReadSerializer
+from pinit_api.serializers.pin_serializers import PinBaseReadSerializer
 
 
 def compute_file_key_s3(pin_id, extension):
@@ -65,6 +65,6 @@ class CreatePinView(generics.CreateAPIView):
         pin.image_url = compute_file_url_s3(file_key_s3)
         pin.save()
 
-        pin_serializer = PinBasicReadSerializer(pin)
+        pin_serializer = PinBaseReadSerializer(pin)
 
         return Response(pin_serializer.data, status=status.HTTP_201_CREATED)

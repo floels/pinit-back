@@ -20,40 +20,58 @@ class GetPinDetailsTests(APITestCase):
     def setUp(self):
         self.pins = PinFactory.create_batch(NUMBER_EXISTING_PINS)
 
+        self.pin = self.pins[0]
+
         self.client = APIClient()
 
     def test_get_pin_details_happy_path(self):
-        first_pin = self.pins[0]
-
-        response = self.client.get(f"/api/pins/{first_pin.unique_id}/")
+        response = self.get(unique_id=self.pin.unique_id)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
-        self.assertEqual(response_data["unique_id"], first_pin.unique_id)
-        self.assertEqual(response_data["image_url"], first_pin.image_url)
-        self.assertEqual(response_data["title"], first_pin.title)
-        self.assertEqual(response_data["author"]["username"], first_pin.author.username)
-        self.assertEqual(
-            response_data["author"]["display_name"], first_pin.author.display_name
+    def get(self, unique_id=""):
+        return self.client.get(f"/api/pins/{unique_id}/")
+
+    def check_response_data_against_pin_object(self, response_data=None, pin=None):
+        self.assertEqual(len(response_data), 5)
+
+        self.assertEqual(response_data["unique_id"], pin.unique_id)
+        self.assertEqual(response_data["image_url"], pin.image_url)
+        self.assertEqual(response_data["title"], pin.title)
+        self.assertEqual(response_data["description"], pin.description)
+
+        author_data = response_data["author"]
+
+        self.check_author_data_against_account_object(
+            author_data=author_data, account=pin.author
         )
+
+    def check_author_data_against_account_object(self, author_data=None, account=None):
+        self.assertEqual(len(author_data), 3)
+
+        self.assertEqual(author_data["username"], account.username)
+        self.assertEqual(author_data["display_name"], account.display_name)
         self.assertEqual(
-            response_data["author"]["profile_picture_url"],
-            first_pin.author.profile_picture_url,
+            author_data["profile_picture_url"],
+            account.profile_picture_url,
         )
 
     def test_get_pin_details_not_exists(self):
+        non_existing_unique_id = self.get_non_existing_unique_id()
+
+        response = self.get(unique_id=non_existing_unique_id)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def get_non_existing_unique_id(self):
         tentative_non_existing_unique_id = 100_000_000_000_000_000
 
         while Pin.objects.filter(unique_id=tentative_non_existing_unique_id).exists():
             tentative_non_existing_unique_id += 1
 
-        non_existing_unique_id = tentative_non_existing_unique_id
-
-        response = self.client.get(f"/api/pins/{non_existing_unique_id}/")
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        return tentative_non_existing_unique_id
 
 
 class SavePinTests(APITestCase):
@@ -77,6 +95,9 @@ class SavePinTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.board.author.owner)
 
+    def post(self, request_payload=None):
+        return self.client.post("/api/save-pin/", request_payload, format="json")
+
     def check_board_last_pin_added_at(self, board=None):
         board.refresh_from_db()
 
@@ -99,14 +120,12 @@ class SavePinTests(APITestCase):
         self.assertEqual(board.cover_picture_url, self.pin_already_saved.image_url)
 
     def test_save_pin_happy_path(self):
-        now = timezone.now()
-
         request_payload = {
             "pin_id": self.pin_to_save.unique_id,
             "board_id": self.board.unique_id,
         }
 
-        response = self.client.post("/api/save-pin/", request_payload, format="json")
+        response = self.post(request_payload=request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -128,7 +147,7 @@ class SavePinTests(APITestCase):
             "board_id": self.board.unique_id,
         }
 
-        response = self.client.post("/api/save-pin/", request_payload, format="json")
+        response = self.post(request_payload=request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -144,7 +163,7 @@ class SavePinTests(APITestCase):
             "board_id": self.empty_board.unique_id,
         }
 
-        response = self.client.post("/api/save-pin/", request_payload, format="json")
+        self.post(request_payload=request_payload)
 
         self.empty_board.refresh_from_db()
 
@@ -158,7 +177,7 @@ class SavePinTests(APITestCase):
             "board_id": self.board.unique_id,
         }
 
-        response = self.client.post("/api/save-pin/", request_payload, format="json")
+        response = self.post(request_payload=request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -176,7 +195,7 @@ class SavePinTests(APITestCase):
             "board_id": non_existing_board_id,
         }
 
-        response = self.client.post("/api/save-pin/", request_payload, format="json")
+        response = self.post(request_payload=request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -194,7 +213,7 @@ class SavePinTests(APITestCase):
             "board_id": self.board_not_owned.unique_id,
         }
 
-        response = self.client.post("/api/save-pin/", request_payload, format="json")
+        response = self.post(request_payload=request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 

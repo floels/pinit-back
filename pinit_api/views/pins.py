@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, views
 
 from ..models import Pin, Board, PinInBoard
-from ..serializers import PinWithAuthorReadSerializer
+from ..serializers import PinWithFullDetailsReadSerializer
 from ..lib.constants import (
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
@@ -15,12 +15,37 @@ from ..lib.constants import (
 
 class GetPinDetailsView(generics.RetrieveAPIView):
     queryset = Pin.objects.all()
-    serializer_class = PinWithAuthorReadSerializer
+    serializer_class = PinWithFullDetailsReadSerializer
     lookup_field = "unique_id"
 
 
 class SavePinView(views.APIView):
     permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        pin_unique_id = request.data.get("pin_id")
+        board_unique_id = request.data.get("board_id")
+
+        pin = Pin.objects.filter(unique_id=pin_unique_id).first()
+        if not pin:
+            return self.get_response_pin_not_found()
+
+        board = Board.objects.filter(unique_id=board_unique_id).first()
+        if not board:
+            return self.get_response_board_not_found()
+
+        if not self.check_user_is_board_author(user=request.user, board=board):
+            return self.get_response_forbidden()
+
+        was_updated = self.update_or_create_pin_in_board(pin=pin, board=board)
+
+        self.update_board_cover_picture_if_needed(board=board, pin=pin)
+
+        return self.get_ok_response(
+            pin_unique_id=pin_unique_id,
+            board_unique_id=board_unique_id,
+            was_updated=was_updated,
+        )
 
     def check_user_is_board_author(self, user=None, board=None):
         return board.author == user.account
@@ -75,28 +100,3 @@ class SavePinView(views.APIView):
         if not board.cover_picture_url:
             board.cover_picture_url = pin.image_url
             board.save()
-
-    def post(self, request):
-        pin_unique_id = request.data.get("pin_id")
-        board_unique_id = request.data.get("board_id")
-
-        pin = Pin.objects.filter(unique_id=pin_unique_id).first()
-        if not pin:
-            return self.get_response_pin_not_found()
-
-        board = Board.objects.filter(unique_id=board_unique_id).first()
-        if not board:
-            return self.get_response_board_not_found()
-
-        if not self.check_user_is_board_author(user=request.user, board=board):
-            return self.get_response_forbidden()
-
-        was_updated = self.update_or_create_pin_in_board(pin=pin, board=board)
-
-        self.update_board_cover_picture_if_needed(board=board, pin=pin)
-
-        return self.get_ok_response(
-            pin_unique_id=pin_unique_id,
-            board_unique_id=board_unique_id,
-            was_updated=was_updated,
-        )
