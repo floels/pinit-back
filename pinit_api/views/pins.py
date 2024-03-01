@@ -22,27 +22,59 @@ class GetPinDetailsView(generics.RetrieveAPIView):
 class SavePinView(views.APIView):
     permission_classes = [IsAuthenticated]
 
-    def check_board_author(self, board, user):
+    def check_user_is_board_author(self, user=None, board=None):
         return board.author == user.account
 
-    def update_last_pin_added_at(self, board, now):
-        board.last_pin_added_at = now
+    def update_last_pin_added_at(self, board=None, date=None):
+        board.last_pin_added_at = date
         board.save()
 
-    def update_or_create_pin_in_board(self, pin, board):
+    def update_or_create_pin_in_board(self, pin=None, board=None):
         now = timezone.now()
 
-        self.update_last_pin_added_at(board, now)
+        self.update_last_pin_added_at(board=board, date=now)
 
         existing_pin_save = PinInBoard.objects.filter(pin=pin, board=board).first()
 
         if existing_pin_save:
             existing_pin_save.last_saved_at = now
             existing_pin_save.save()
-            return True  # Indicates an update
+
         else:
             board.pins.add(pin)
-            return False  # Indicates a creation
+
+        was_updated = existing_pin_save is not None
+
+        return was_updated
+
+    def get_response_pin_not_found(self):
+        return Response(
+            {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    def get_response_board_not_found(self):
+        return Response(
+            {"errors": [{"code": ERROR_CODE_BOARD_NOT_FOUND}]},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    def get_response_forbidden(self):
+        return Response(
+            {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    def get_ok_response(self, pin_unique_id="", board_unique_id="", was_updated=False):
+        return Response(
+            {"pin_id": pin_unique_id, "board_id": board_unique_id},
+            status=status.HTTP_200_OK if was_updated else status.HTTP_201_CREATED,
+        )
+
+    def update_board_cover_picture_if_needed(self, board=None, pin=None):
+        if not board.cover_picture_url:
+            board.cover_picture_url = pin.image_url
+            board.save()
 
     def post(self, request):
         pin_unique_id = request.data.get("pin_id")
@@ -50,28 +82,21 @@ class SavePinView(views.APIView):
 
         pin = Pin.objects.filter(unique_id=pin_unique_id).first()
         if not pin:
-            return Response(
-                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return self.get_response_pin_not_found()
 
         board = Board.objects.filter(unique_id=board_unique_id).first()
         if not board:
-            return Response(
-                {"errors": [{"code": ERROR_CODE_BOARD_NOT_FOUND}]},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return self.get_response_board_not_found()
 
-        if not self.check_board_author(board, request.user):
-            return Response(
-                {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        if not self.check_user_is_board_author(user=request.user, board=board):
+            return self.get_response_forbidden()
 
-        response_body = {"pin_id": pin_unique_id, "board_id": board_unique_id}
-        was_updated = self.update_or_create_pin_in_board(pin, board)
+        was_updated = self.update_or_create_pin_in_board(pin=pin, board=board)
 
-        return Response(
-            response_body,
-            status=status.HTTP_200_OK if was_updated else status.HTTP_201_CREATED,
+        self.update_board_cover_picture_if_needed(board=board, pin=pin)
+
+        return self.get_ok_response(
+            pin_unique_id=pin_unique_id,
+            board_unique_id=board_unique_id,
+            was_updated=was_updated,
         )
