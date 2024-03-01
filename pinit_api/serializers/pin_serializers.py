@@ -1,13 +1,7 @@
 from rest_framework import serializers
 
-from ..models import Account, Pin
-from .account_serializers import AccountBaseSerializer
-
-
-class AccountReadSerializer(AccountBaseSerializer):
-    class Meta:
-        model = Account
-        fields = ("username", "display_name", "profile_picture_url")
+from ..models import Pin
+from .account_serializers import AccountBaseReadSerializer
 
 
 class PinBasicReadSerializer(serializers.ModelSerializer):
@@ -17,7 +11,7 @@ class PinBasicReadSerializer(serializers.ModelSerializer):
 
 
 class PinWithAuthorReadSerializer(serializers.ModelSerializer):
-    author = AccountReadSerializer(read_only=True)
+    author = AccountBaseReadSerializer(read_only=True)
 
     class Meta:
         model = Pin
