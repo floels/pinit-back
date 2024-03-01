@@ -349,6 +349,10 @@ paths:
                     type: string
                     description: Refresh token
                     example: eyJhbGciO...pQiTWpYL8LS0H1
+                  access_token_expiration_utc:
+                    type: string
+                    description: Access token expiration date (ISO 8601 format, UTC)
+                    example: '2024-03-01T11:36:57+00:00'
         '400':
           description: Failed signup
           content:

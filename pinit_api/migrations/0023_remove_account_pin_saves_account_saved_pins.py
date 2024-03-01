@@ -4,19 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pinit_api', '0022_remove_account_saved_pins_account_pin_saves'),
+        ("pinit_api", "0022_remove_account_saved_pins_account_pin_saves"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='account',
-            name='pin_saves',
+            model_name="account",
+            name="pin_saves",
         ),
         migrations.AddField(
-            model_name='account',
-            name='saved_pins',
-            field=models.ManyToManyField(related_name='saved_by', through='pinit_api.PinSave', to='pinit_api.pin'),
+            model_name="account",
+            name="saved_pins",
+            field=models.ManyToManyField(
+                related_name="saved_by", through="pinit_api.PinSave", to="pinit_api.pin"
+            ),
         ),
     ]

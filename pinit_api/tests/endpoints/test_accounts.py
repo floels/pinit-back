@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
 from ..testing_utils import AccountFactory, BoardFactory
+from pinit_api.lib.constants import ERROR_CODE_UNAUTHORIZED
 
 
 class AccountsTestCase(APITestCase):
@@ -103,3 +104,7 @@ class GetMyAccountDetailsTests(AccountsTestCase):
         response = self.client.get(f"/api/accounts/me/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
+        self.assertEqual(response_data, {"errors": [{"code": ERROR_CODE_UNAUTHORIZED}]})

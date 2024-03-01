@@ -1,29 +1,31 @@
-from django.http import JsonResponse
+from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
 
-from ..utils import (
-    compute_username_candidate_from_email,
-    compute_first_and_last_name_from_email,
-    compute_initial_from_email,
+from ..lib.utils import (
+    compute_username_candidate,
+    compute_first_and_last_name,
+    compute_initial,
+    get_tokens_data,
 )
 from ..models import Account
 from ..serializers import UserCreateSerializer
 
 FORBIDDEN_USERNAMES = [
-    "me",  # otherwise the /accounts/me/ URL won't work
+    "me",  # since '/accounts/me/' URL is reserved (see 'urls.py')
     "pinit",
 ]
 
 
-def compute_default_account_username_from_email(email):
-    username_candidate = compute_username_candidate_from_email(email)
+def compute_default_username_from_email(email=""):
+    username_candidate = compute_username_candidate(email=email)
 
-    return compute_default_account_username_from_candidate(username_candidate)
+    return compute_default_username_from_username_candidate(
+        username_candidate=username_candidate
+    )
 
 
-def compute_default_account_username_from_candidate(username_candidate):
+def compute_default_username_from_username_candidate(username_candidate=""):
     username_is_already_taken = Account.objects.filter(
         username=username_candidate
     ).exists()
@@ -31,12 +33,12 @@ def compute_default_account_username_from_candidate(username_candidate):
     username_is_forbidden = username_candidate in FORBIDDEN_USERNAMES
 
     if username_is_already_taken or username_is_forbidden:
-        return compute_derived_username_from_candidate(username_candidate)
+        return compute_derived_username(username_candidate=username_candidate)
 
     return username_candidate
 
 
-def compute_derived_username_from_candidate(username_candidate):
+def compute_derived_username(username_candidate=""):
     accounts_with_username_starting_with_candidate = Account.objects.filter(
         username__startswith=username_candidate
     )
@@ -62,12 +64,22 @@ def compute_derived_username_from_candidate(username_candidate):
     return derived_username
 
 
-def create_personal_account_for_user(user):
+def get_error_response(user_serializer=None):
+    flattened_errors = []
+
+    for field_errors in user_serializer.errors.values():
+        for error in field_errors:
+            flattened_errors.append({"code": str(error)})
+
+    return Response({"errors": flattened_errors}, status=400)
+
+
+def create_personal_account(user=None):
     email = user.email
 
-    username = compute_default_account_username_from_email(email)
-    first_name, last_name = compute_first_and_last_name_from_email(email)
-    initial = compute_initial_from_email(email)
+    username = compute_default_username_from_email(email=email)
+    first_name, last_name = compute_first_and_last_name(email=email)
+    initial = compute_initial(email=email)
 
     Account.objects.create(
         username=username,
@@ -83,25 +95,13 @@ def create_personal_account_for_user(user):
 def sign_up(request):
     user_serializer = UserCreateSerializer(data=request.data)
 
-    if user_serializer.is_valid():
-        user = user_serializer.save()
+    if not user_serializer.is_valid():
+        return get_error_response(user_serializer=user_serializer)
 
-        create_personal_account_for_user(user)
+    user = user_serializer.save()
 
-        tokens_pair = RefreshToken.for_user(user)
+    create_personal_account(user=user)
 
-        return JsonResponse(
-            {
-                "access_token": str(tokens_pair.access_token),
-                "refresh_token": str(tokens_pair),
-            },
-            status=status.HTTP_201_CREATED,
-        )
+    tokens_data = get_tokens_data(user=user)
 
-    flattened_errors = []
-
-    for field_errors in user_serializer.errors.values():
-        for error in field_errors:
-            flattened_errors.append({"code": str(error)})
-
-    return JsonResponse({"errors": flattened_errors}, status=400)
+    return Response(tokens_data, status=status.HTTP_201_CREATED)

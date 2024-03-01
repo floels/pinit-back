@@ -5,15 +5,18 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pinit_api', '0023_remove_account_pin_saves_account_saved_pins'),
+        ("pinit_api", "0023_remove_account_pin_saves_account_saved_pins"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='pinsave',
-            name='account',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pin_saves', to='pinit_api.account'),
+            model_name="pinsave",
+            name="account",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="pin_saves",
+                to="pinit_api.account",
+            ),
         ),
     ]
