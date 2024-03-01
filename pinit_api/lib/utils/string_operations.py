@@ -1,7 +1,7 @@
 import re
 
 
-def compute_initial_from_email(email):
+def compute_initial(email=""):
     match_letter_before_at = re.search(r"([a-zA-Z])[^@]*@", email)
 
     if match_letter_before_at:
@@ -12,7 +12,7 @@ def compute_initial_from_email(email):
     return "X"
 
 
-def compute_username_candidate_from_email(email):
+def compute_username_candidate(email=""):
     local_part = email.split("@")[0]
 
     alphabetic_characters = re.findall(r"[a-zA-Z]+", local_part)
@@ -23,7 +23,7 @@ def compute_username_candidate_from_email(email):
     return username_candidate if username_candidate else "user"
 
 
-def compute_first_and_last_name_from_email(email):
+def compute_first_and_last_name(email=""):
     local_part = email.split("@")[0]
 
     # Assume ".", "_" and "-" can separate a first name from a last name

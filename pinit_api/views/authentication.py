@@ -7,13 +7,13 @@ from rest_framework_simplejwt.views import (
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..models import User
-from ..utils.constants import (
+from ..lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )
+from ..lib.utils import get_tokens_data
 
 ERROR_CODE_INVALID_REFRESH_TOKEN = "invalid_refresh_token"
 ERROR_CODE_MISSING_REFRESH_TOKEN = "missing_refresh_token"
@@ -38,21 +38,9 @@ class TokenObtainPairView(SimpleJWTTokenObtainPairView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        refresh_token = RefreshToken.for_user(user)
+        tokens_data = get_tokens_data(user)
 
-        access_token = refresh_token.access_token
-
-        access_token_expiration_utc = datetime.fromtimestamp(
-            access_token["exp"], tz=pytz.UTC
-        )
-
-        return Response(
-            {
-                "access_token": str(access_token),
-                "access_token_expiration_utc": access_token_expiration_utc.isoformat(),
-                "refresh_token": str(refresh_token),
-            }
-        )
+        return Response(tokens_data)
 
 
 # This view is taking inspiration from:

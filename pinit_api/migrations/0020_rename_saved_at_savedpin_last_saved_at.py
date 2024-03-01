@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pinit_api', '0019_savedpin_account_saved_pins'),
+        ("pinit_api", "0019_savedpin_account_saved_pins"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='savedpin',
-            old_name='saved_at',
-            new_name='last_saved_at',
+            model_name="savedpin",
+            old_name="saved_at",
+            new_name="last_saved_at",
         ),
     ]

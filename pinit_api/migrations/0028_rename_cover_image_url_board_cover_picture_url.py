@@ -4,15 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pinit_api', '0027_board_created_at_board_last_pin_added_at_board_pins_and_more'),
+        (
+            "pinit_api",
+            "0027_board_created_at_board_last_pin_added_at_board_pins_and_more",
+        ),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='board',
-            old_name='cover_image_url',
-            new_name='cover_picture_url',
+            model_name="board",
+            old_name="cover_image_url",
+            new_name="cover_picture_url",
         ),
     ]

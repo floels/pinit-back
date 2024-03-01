@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from pinit_api.models import User, Account
-from pinit_api.utils.constants import (
+from pinit_api.lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )
@@ -14,6 +14,7 @@ from pinit_api.tests.testing_utils.factories import AccountFactory
 
 class SignupTests(TestCase):
     def setUp(self):
+        self.new_user_email = "new.user@example.com"
         self.existing_user_email = "existing.user@example.com"
         self.existing_user_password = "Pa$$wOrd_existing_user"
 
@@ -31,15 +32,7 @@ class SignupTests(TestCase):
         self.number_existing_accounts = Account.objects.count()
         self.number_existing_users = User.objects.count()
 
-    def test_signup_happy_path(self):
-        request_payload = {
-            "email": "new.user@example.com",
-            "password": "Pa$$w0rd_new_user",
-            "birthdate": "1970-01-01",
-        }
-        response = self.client.post("/api/signup/", request_payload, format="json")
-
-        # Check response
+    def check_response_happy_path(self, response):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         response_data = response.json()
@@ -50,15 +43,23 @@ class SignupTests(TestCase):
         refresh_token = response_data["refresh_token"]
         assert bool(refresh_token)
 
-        # Check user was created with correct attributes
-        self.assertEqual(User.objects.count(), self.number_existing_users + 1)
-        new_user = User.objects.get(email="new.user@example.com")
-        self.assertEqual(str(new_user.birthdate), "1970-01-01")
+        access_token_expiration_date = response_data["access_token_expiration_utc"]
+        assert bool(access_token_expiration_date)
 
-        # Check account was created with correct attributes
+    def check_added_user_and_account(self):
+        self.assertEqual(User.objects.count(), self.number_existing_users + 1)
         self.assertEqual(Account.objects.count(), self.number_existing_accounts + 1)
 
-        new_account = Account.objects.get(owner=new_user)
+    def check_not_added_user_or_account(self):
+        self.assertEqual(User.objects.count(), self.number_existing_users)
+        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+
+    def check_attributes_new_user(self):
+        new_user = User.objects.get(email=self.new_user_email)
+        self.assertEqual(str(new_user.birthdate), "1970-01-01")
+
+    def check_attributes_new_account(self):
+        new_account = Account.objects.get(owner__email=self.new_user_email)
 
         self.assertEqual(new_account.type, "personal")
         self.assertEqual(new_account.username, "newuser3")
@@ -66,6 +67,27 @@ class SignupTests(TestCase):
         self.assertEqual(new_account.first_name, "New")
         self.assertEqual(new_account.last_name, "User")
         self.assertEqual(new_account.business_name, None)
+
+    def check_response_error_code(self, response=None, error_code=""):
+        response_data = response.json()
+
+        self.assertEqual(
+            response_data["errors"],
+            [{"code": error_code}],
+        )
+
+    def test_signup_happy_path(self):
+        request_payload = {
+            "email": self.new_user_email,
+            "password": "Pa$$w0rd_new_user",
+            "birthdate": "1970-01-01",
+        }
+        response = self.client.post("/api/signup/", request_payload, format="json")
+
+        self.check_response_happy_path(response)
+        self.check_added_user_and_account()
+        self.check_attributes_new_user()
+        self.check_attributes_new_account()
 
     def test_signup_forbidden_username(self):
         request_payload = {
@@ -76,8 +98,6 @@ class SignupTests(TestCase):
 
         self.client.post("/api/signup/", request_payload, format="json")
 
-        # Check account was created with correct username:
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts + 1)
         Account.objects.get(username="me1")
 
     def test_signup_invalid_email(self):
@@ -90,17 +110,11 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_EMAIL}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_EMAIL
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()
 
     def test_signup_blank_email(self):
         request_payload = {
@@ -111,17 +125,11 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_EMAIL}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_EMAIL
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()
 
     def test_signup_email_already_signed_up(self):
         request_payload = {
@@ -133,17 +141,11 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_EMAIL_ALREADY_SIGNED_UP}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_EMAIL_ALREADY_SIGNED_UP
         )
 
-        # Check no user and no account was created:
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()
 
     def test_signup_invalid_password(self):
         request_payload = {
@@ -155,17 +157,11 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_PASSWORD}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_PASSWORD
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()
 
     def test_signup_blank_password(self):
         request_payload = {
@@ -177,17 +173,11 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_PASSWORD}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_PASSWORD
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()
 
     def test_signup_invalid_birthdate(self):
         request_payload = {
@@ -199,17 +189,11 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_BIRTHDATE}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_BIRTHDATE
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()
 
     def test_signup_blank_birthdate(self):
         request_payload = {
@@ -221,14 +205,8 @@ class SignupTests(TestCase):
         response = self.client.post("/api/signup/", request_payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_BIRTHDATE}],
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_BIRTHDATE
         )
 
-        # Check no user and no account was created
-        self.assertEqual(User.objects.count(), self.number_existing_users)
-        self.assertEqual(Account.objects.count(), self.number_existing_accounts)
+        self.check_not_added_user_or_account()

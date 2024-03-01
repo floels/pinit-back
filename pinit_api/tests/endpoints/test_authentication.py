@@ -4,7 +4,7 @@ from django.utils.dateparse import parse_datetime
 from django.conf import settings
 from rest_framework import status
 from pinit_api.models import User
-from pinit_api.utils.constants import (
+from pinit_api.lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )
@@ -84,7 +84,9 @@ class AuthenticationTests(TestCase):
         refreshed_access_token = response_data_refresh["access_token"]
         assert bool(refreshed_access_token)
 
-        refreshed_access_expiration_date = response_data_refresh["access_token_expiration_utc"]
+        refreshed_access_expiration_date = response_data_refresh[
+            "access_token_expiration_utc"
+        ]
         assert bool(refreshed_access_expiration_date)
 
     def test_obtain_token_wrong_email(self):

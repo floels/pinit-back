@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics, status, serializers
 from pinit_api.models import Pin, Account
-from pinit_api.utils.constants import (
+from pinit_api.lib.constants import (
     ERROR_CODE_PIN_CREATION_FAILED,
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
 )
