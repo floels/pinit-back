@@ -5,7 +5,7 @@ from rest_framework import status
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
 from ..models import Pin
-from ..serializers import PinWithAuthorReadSerializer
+from ..serializers import PinWithAuthorDetailsReadSerializer
 
 
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"
@@ -39,6 +39,6 @@ def search_pins(request):
     paginator = PageNumberPagination()
     paginated_results = paginator.paginate_queryset(search_results, request)
 
-    serializer = PinWithAuthorReadSerializer(paginated_results, many=True)
+    serializer = PinWithAuthorDetailsReadSerializer(paginated_results, many=True)
 
     return paginator.get_paginated_response(serializer.data)
