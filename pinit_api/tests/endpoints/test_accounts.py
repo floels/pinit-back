@@ -6,11 +6,46 @@ from rest_framework import status
 from ..testing_utils import AccountFactory, BoardFactory
 
 
-class GetAccountPublicDetailsTests(APITestCase):
+class AccountsTestCase(APITestCase):
     def setUp(self):
         self.account = AccountFactory()
 
         self.client = APIClient()
+
+        self.user = self.account.owner
+
+    def check_response_data_against_account_public_details(
+        self, response_data, account
+    ):
+        self.assertEqual(response_data["username"], account.username)
+        self.assertEqual(response_data["display_name"], account.display_name)
+        self.assertEqual(
+            response_data["profile_picture_url"], account.profile_picture_url
+        )
+        self.assertEqual(
+            response_data["background_picture_url"], account.background_picture_url
+        )
+        self.assertEqual(response_data["description"], account.description)
+        self.assertEqual(
+            response_data["boards"],
+            [
+                {
+                    "unique_id": board.unique_id,
+                    "title": board.title,
+                    "cover_picture_url": board.cover_picture_url,
+                }
+                for board in account.boards.order_by(
+                    "-last_pin_added_at", "-created_at"
+                )
+            ],
+        )
+
+
+class GetAccountPublicDetailsTests(AccountsTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.board = BoardFactory(author=self.account)
 
     def test_get_account_details_happy_path(self):
         response = self.client.get(f"/api/accounts/{self.account.username}/")
@@ -19,13 +54,9 @@ class GetAccountPublicDetailsTests(APITestCase):
 
         response_data = response.json()
 
-        self.assertEqual(response_data["username"], self.account.username)
-        self.assertEqual(response_data["type"], self.account.type)
-        self.assertEqual(response_data["display_name"], self.account.display_name)
-
-        self.assertIn("profile_picture_url", response_data)
-        self.assertIn("background_picture_url", response_data)
-        self.assertIn("description", response_data)
+        self.check_response_data_against_account_public_details(
+            response_data, self.account
+        )
 
     def test_get_account_details_not_found(self):
         response = self.client.get("/api/account/non_existing_username/")
@@ -33,9 +64,9 @@ class GetAccountPublicDetailsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-class GetMyAccountDetailsTests(APITestCase):
+class GetMyAccountDetailsTests(AccountsTestCase):
     def setUp(self):
-        self.account = AccountFactory()
+        super().setUp()
 
         self.boardLeastRecent = BoardFactory(author=self.account)
         self.boardMostRecent = BoardFactory(author=self.account)
@@ -46,30 +77,14 @@ class GetMyAccountDetailsTests(APITestCase):
         self.boardMostRecent.last_pin_added_at = timezone.now() - timedelta(days=1)
         self.boardMostRecent.save()
 
-        self.user = self.account.owner
+    def check_response_data_against_account_private_details(
+        self, response_data, account
+    ):
+        self.check_response_data_against_account_public_details(response_data, account)
 
-    def check_response_data_against_account(self, response_data, account):
-        self.assertEqual(response_data["username"], self.account.username)
-        self.assertEqual(response_data["type"], self.account.type)
-        self.assertEqual(response_data["initial"], self.account.initial)
-        self.assertEqual(response_data["display_name"], self.account.display_name)
-        self.assertEqual(
-            response_data["profile_picture_url"], self.account.profile_picture_url
-        )
+        self.assertEqual(response_data["type"], account.type)
 
-    def check_response_data_against_boards(self, response_data, boards):
-        self.assertEqual(len(response_data["boards"]), len(boards))
-
-        ordered_boards = sorted(
-            boards, key=lambda board: board.last_pin_added_at, reverse=True
-        )
-
-        for i, board in enumerate(ordered_boards):
-            self.assertEqual(response_data["boards"][i]["unique_id"], board.unique_id)
-            self.assertEqual(response_data["boards"][i]["title"], board.title)
-            self.assertEqual(
-                response_data["boards"][i]["cover_picture_url"], board.cover_picture_url
-            )
+        self.assertEqual(response_data["initial"], account.initial)
 
     def test_get_my_account_details_happy_path(self):
         self.client.force_authenticate(self.user)
@@ -80,10 +95,8 @@ class GetMyAccountDetailsTests(APITestCase):
 
         response_data = response.json()
 
-        self.check_response_data_against_account(response_data, self.account)
-
-        self.check_response_data_against_boards(
-            response_data, [self.boardMostRecent, self.boardLeastRecent]
+        self.check_response_data_against_account_private_details(
+            response_data, self.account
         )
 
     def test_get_my_account_details_unauthenticated(self):
