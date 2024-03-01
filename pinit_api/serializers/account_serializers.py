@@ -9,7 +9,7 @@ class AccountBaseSerializer(serializers.ModelSerializer):
         return obj.display_name
 
 
-class AccountSimpleReadSerializer(AccountBaseSerializer):
+class AccountWithPrivateDetailsReadSerializer(AccountBaseSerializer):
     class Meta:
         model = Account
         fields = (

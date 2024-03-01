@@ -51,13 +51,11 @@ class GetMyAccountDetailsTests(APITestCase):
     def check_response_data_against_account(self, response_data, account):
         self.assertEqual(response_data["username"], self.account.username)
         self.assertEqual(response_data["type"], self.account.type)
+        self.assertEqual(response_data["initial"], self.account.initial)
         self.assertEqual(response_data["display_name"], self.account.display_name)
-        self.assertIn(
+        self.assertEqual(
             response_data["profile_picture_url"], self.account.profile_picture_url
         )
-
-        self.assertIn("background_picture_url", response_data)
-        self.assertIn("description", response_data)
 
     def check_response_data_against_boards(self, response_data, boards):
         self.assertEqual(len(response_data["boards"]), len(boards))

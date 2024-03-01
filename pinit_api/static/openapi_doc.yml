@@ -59,9 +59,9 @@ paths:
       description: Get the public details for the account owned by the authenticated
         user.
       tags:
-      - Accounts
+        - Accounts
       security:
-      - jwtAuth: []
+        - jwtAuth: []
       responses:
         '200':
           description: Success
@@ -91,6 +91,11 @@ paths:
                     format: uri
                     nullable: true
                     description: Account profile picture URL
+                  boards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Board'
+                    description: List of boards authored with the account
         '401':
           description: Failed authentication
   /api/create-pin/:
@@ -485,7 +490,7 @@ paths:
                             Error code: `invalid_refresh_token`
 components:
   schemas:
-    AccountData:
+    Account:
       type: object
       properties:
         username:
@@ -499,7 +504,22 @@ components:
         profile_picture_url:
           type: string
           format: uri
-          description: "Account profile picture URL"
+          description: Account profile picture URL
+    Board:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          description: Board unique ID
+          example: "441312392807868"
+        title:
+          type: string
+          description: Board title
+          example: "My food board"
+        cover_picture_url:
+          type: string
+          format: uri
+          description: Board cover picture URL
     PaginatedPinWithAuthorList:
       type: object
       properties:
@@ -546,7 +566,7 @@ components:
           properties:
             author:
               description: Pin author data
-              $ref: '#/components/schemas/AccountData'
+              $ref: '#/components/schemas/Account'
   securitySchemes:
     jwtAuth:
       type: http
