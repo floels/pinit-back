@@ -118,6 +118,7 @@ class PinInBoard(models.Model):
 
     class Meta:
         unique_together = ("pin", "board")
+        verbose_name_plural = "Pins in boards"
 
     def __str__(self):
         return f"{self.pin} in {self.board}"

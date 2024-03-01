@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 
-from .models import User, Account, Pin, Board
+from .models import User, Account, Pin, Board, PinInBoard
 
 
 # https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#a-full-example
@@ -58,7 +58,7 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ("email", "birthdate", "is_admin", "created_at")
+    list_display = ("email", "is_admin", "created_at")
     list_filter = ("is_admin",)
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -84,15 +84,36 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
+class AccountAdmin(admin.ModelAdmin):
+    list_display = (
+        "username",
+        "owner",
+        "display_name",
+        "created_at",
+    )
+    ordering = ("-created_at",)
+
+
 class PinAdmin(admin.ModelAdmin):
     list_display = ("unique_id", "title", "author", "created_at")
     ordering = ("-created_at",)
 
 
+class BoardAdmin(admin.ModelAdmin):
+    list_display = ("unique_id", "title", "author", "created_at")
+    ordering = ("-created_at",)
+
+
+class PinInBoardAdmin(admin.ModelAdmin):
+    list_display = ("pin", "board", "last_saved_at")
+    ordering = ("-last_saved_at",)
+
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Account)
+admin.site.register(Account, AccountAdmin)
 admin.site.register(Pin, PinAdmin)
-admin.site.register(Board)
+admin.site.register(Board, BoardAdmin)
+admin.site.register(PinInBoard, PinInBoardAdmin)
 
 # Since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
