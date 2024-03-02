@@ -16,8 +16,10 @@ class AccountsTestCase(APITestCase):
         self.user = self.account.owner
 
     def check_response_data_against_account_public_details(
-        self, response_data, account
+        self, response_data=None, account=None, includes_private_details=False
     ):
+        self.assertEqual(len(response_data), 9 if includes_private_details else 7)
+
         self.assertEqual(response_data["username"], account.username)
         self.assertEqual(response_data["display_name"], account.display_name)
         self.assertEqual(
@@ -27,17 +29,24 @@ class AccountsTestCase(APITestCase):
             response_data["background_picture_url"], account.background_picture_url
         )
         self.assertEqual(response_data["description"], account.description)
+        self.assertEqual(response_data["initial"], account.initial)
+
+        boards_data = response_data["boards"]
+
+        self.check_boards_data_against_board_list(
+            boards_data=boards_data, board_list=account.boards
+        )
+
+    def check_boards_data_against_board_list(self, boards_data=None, board_list=None):
         self.assertEqual(
-            response_data["boards"],
+            boards_data,
             [
                 {
                     "unique_id": board.unique_id,
                     "title": board.title,
                     "cover_picture_url": board.cover_picture_url,
                 }
-                for board in account.boards.order_by(
-                    "-last_pin_added_at", "-created_at"
-                )
+                for board in board_list.order_by("-last_pin_added_at", "-created_at")
             ],
         )
 
@@ -49,18 +58,24 @@ class GetAccountPublicDetailsTests(AccountsTestCase):
         self.board = BoardFactory(author=self.account)
 
     def test_get_account_details_happy_path(self):
-        response = self.client.get(f"/api/accounts/{self.account.username}/")
+        response = self.get(username=self.account.username)
 
+        self.check_response_happy_path(response=response)
+
+    def get(self, username=""):
+        return self.client.get(f"/api/accounts/{username}/")
+
+    def check_response_happy_path(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
         self.check_response_data_against_account_public_details(
-            response_data, self.account
+            response_data=response_data, account=self.account
         )
 
     def test_get_account_details_not_found(self):
-        response = self.client.get("/api/account/non_existing_username/")
+        response = self.get(username="non_existing_username")
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -72,37 +87,51 @@ class GetMyAccountDetailsTests(AccountsTestCase):
         self.boardLeastRecent = BoardFactory(author=self.account)
         self.boardMostRecent = BoardFactory(author=self.account)
 
-        self.boardLeastRecent.last_pin_added_at = timezone.now() - timedelta(days=2)
+        two_days_ago = timezone.now() - timedelta(days=2)
+        self.boardLeastRecent.last_pin_added_at = two_days_ago
         self.boardLeastRecent.save()
 
-        self.boardMostRecent.last_pin_added_at = timezone.now() - timedelta(days=1)
+        one_day_ago = timezone.now() - timedelta(days=1)
+        self.boardMostRecent.last_pin_added_at = one_day_ago
         self.boardMostRecent.save()
 
-    def check_response_data_against_account_private_details(
-        self, response_data, account
-    ):
-        self.check_response_data_against_account_public_details(response_data, account)
+    def test_happy_path(self):
+        response = self.get()
 
-        self.assertEqual(response_data["type"], account.type)
+        self.check_response_happy_path(response=response)
 
-        self.assertEqual(response_data["initial"], account.initial)
+    def get(self, with_authentication=True):
+        if with_authentication:
+            self.client.force_authenticate(self.user)
 
-    def test_get_my_account_details_happy_path(self):
-        self.client.force_authenticate(self.user)
+        return self.client.get(f"/api/accounts/me/")
 
-        response = self.client.get(f"/api/accounts/me/")
-
+    def check_response_happy_path(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
 
         self.check_response_data_against_account_private_details(
-            response_data, self.account
+            response_data=response_data, account=self.account
         )
 
-    def test_get_my_account_details_unauthenticated(self):
-        response = self.client.get(f"/api/accounts/me/")
+    def check_response_data_against_account_private_details(
+        self, response_data=None, account=None
+    ):
+        self.check_response_data_against_account_public_details(
+            response_data=response_data, account=account, includes_private_details=True
+        )
 
+        self.assertEqual(response_data["type"], account.type)
+
+        self.assertEqual(response_data["owner_email"], account.owner.email)
+
+    def test_unauthenticated(self):
+        response = self.get(with_authentication=False)
+
+        self.check_response_unauthenticated(response=response)
+
+    def check_response_unauthenticated(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         response_data = response.json()

@@ -34,14 +34,20 @@ class AccountWithBoardsReadSerializer(AccountBaseReadSerializer):
 class AccountWithPublicDetailsReadSerializer(AccountWithBoardsReadSerializer):
     class Meta(AccountWithBoardsReadSerializer.Meta):
         fields = AccountWithBoardsReadSerializer.Meta.fields + (
+            "initial",
             "background_picture_url",
             "description",
         )
 
 
 class AccountWithPrivateDetailsReadSerializer(AccountWithPublicDetailsReadSerializer):
+    owner_email = serializers.SerializerMethodField()
+
     class Meta(AccountWithPublicDetailsReadSerializer.Meta):
         fields = AccountWithPublicDetailsReadSerializer.Meta.fields + (
             "type",
-            "initial",
+            "owner_email",
         )
+
+    def get_owner_email(self, obj):
+        return obj.owner.email
