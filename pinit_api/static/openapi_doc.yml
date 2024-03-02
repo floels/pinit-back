@@ -8,49 +8,22 @@ paths:
       operationId: accounts/<username>/
       description: Get the public details for account with username 'username'.
       parameters:
-      - in: path
-        name: username
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
       tags:
-      - Accounts
+        - Accounts
       security:
-      - null
+        - null
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  username:
-                    type: string
-                    description: Account username
-                    example: "johndoe"
-                  type:
-                    type: string
-                    description: Account type ("personal" or "business")
-                    example: "personal"
-                  display_name:
-                    type: string
-                    description: Account display name
-                    example: "John Doe"
-                  profile_picture_url:
-                    type: string
-                    format: uri
-                    nullable: true
-                    description: Account profile picture URL
-                  background_picture_url:
-                    type: string
-                    format: uri
-                    nullable: true
-                    description: Account background picture URL
-                  description:
-                    type: string
-                    nullable: true
-                    description: Account description
+                $ref: '#/components/schemas/AccountWithPublicDetails'
         '404':
           description: No account found for this username
   /api/accounts/me/:
@@ -68,34 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  username:
-                    type: string
-                    description: Account username
-                    example: "johndoe"
-                  type:
-                    type: string
-                    description: Account type ("personal" or "business")
-                    example: "personal"
-                  initial:
-                    type: string
-                    description: Account initial
-                    example: "J"
-                  display_name:
-                    type: string
-                    description: Account display name
-                    example: "John Doe"
-                  profile_picture_url:
-                    type: string
-                    format: uri
-                    nullable: true
-                    description: Account profile picture URL
-                  boards:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Board'
-                    description: List of boards authored with the account
+                $ref: '#/components/schemas/AccountWithPrivateDetails'
         '401':
           description: Failed authentication
   /api/create-pin/:
@@ -127,7 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinBasic'
+                $ref: '#/components/schemas/PinBase'
         '401':
           description: Failed authentication
   /api/pin-suggestions/:
@@ -141,37 +87,37 @@ paths:
           schema:
             type: integer
       tags:
-      - Pins
+        - Pins
       security:
-      - jwtAuth: []
+        - jwtAuth: []
       responses:
         '200':
+          description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPinWithAuthorList'
-          description: ''
+                $ref: '#/components/schemas/PinWithAuthorDetailsPaginatedList'
   /api/pins/{unique_id}/:
     get:
       operationId: pins/<unique_id>/
       description: Get detailed information for pin with ID 'unique_id'
       parameters:
-      - in: path
-        name: unique_id
-        schema:
-          type: string
-        description: ID of Pin
-        required: true
+        - in: path
+          name: unique_id
+          schema:
+            type: string
+          description: ID of Pin
+          required: true
       tags:
-      - Pins
+        - Pins
       security:
-      - null
+        - null
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinWithAuthor'
+                $ref: '#/components/schemas/PinWithFullDetails'
           description: Success
         '404':
           description: No pin found for provided ID
@@ -235,10 +181,10 @@ paths:
                       type: object
                       properties:
                         code:
+                          type: string
                           enum:
                             - pin_not_found
                             - board_not_found
-                          type: string
                           description: |-
                             Error code. One of:
                             * `pin_not_found`: Pin was not found for this ID
@@ -268,7 +214,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPinWithAuthorList'
+                $ref: '#/components/schemas/PinWithAuthorDetailsPaginatedList'
           description: Success
         '400':
           description: No search term provided
@@ -494,7 +440,7 @@ paths:
                             Error code: `invalid_refresh_token`
 components:
   schemas:
-    Account:
+    AccountBase:
       type: object
       properties:
         username:
@@ -524,7 +470,80 @@ components:
           type: string
           format: uri
           description: Board cover picture URL
-    PaginatedPinWithAuthorList:
+    AccountWithBoards:
+      allOf:
+        - $ref: '#/components/schemas/AccountBase'
+        - type: object
+          properties:
+            boards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Board'
+              description: List of boards authored by the account
+    AccountWithPublicDetails:
+      allOf:
+        - $ref: '#/components/schemas/AccountWithBoards'
+        - type: object
+          properties:
+            initial:
+              type: string
+              max_length: 1
+              description: Account initial
+              example: "J"
+            background_picture_url:
+              type: string
+              format: uri
+              description: Account background picture URL
+            description:
+              type: string
+              description: Description of the account
+    AccountWithPrivateDetails:
+      allOf:
+        - $ref: '#/components/schemas/AccountWithPublicDetails'
+        - properties:
+            type:
+              type: string
+              enum:
+                - personal
+                - business
+              description: Account type
+              example: "personal"
+            owner_email:
+              type: string
+              format: email
+              description: Account owner email
+              example: "johndoe@example.com"
+    PinBase:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          description: Pin unique ID
+          example: "837672678962535495"
+        image_url:
+          type: string
+          format: uri
+          description: Pin image URL
+        title:
+          type: string
+          description: Pin title
+          example: "Pin title"
+    PinWithAuthorDetails:
+      allOf:
+        - $ref: '#/components/schemas/PinBase'
+        - properties:
+            author:
+              description: Pin author data
+              $ref: '#/components/schemas/AccountBase'
+    PinWithFullDetails:
+      allOf:
+        - $ref: '#/components/schemas/PinWithAuthorDetails'
+        - properties:
+            description:
+              type: string
+              description: Pin description
+              example: "Pin description."
+    PinWithAuthorDetailsPaginatedList:
       type: object
       properties:
         count:
@@ -543,34 +562,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/PinWithAuthor'
-    PinBasic:
-      type: object
-      description: Basic pin data
-      properties:
-        unique_id:
-          type: string
-          description: Pin unique ID
-          example: "837672678962535495"
-        image_url:
-          type: string
-          format: uri
-          description: Pin image URL
-        title:
-          type: string
-          description: Pin title
-          example: "Pin title"
-        description:
-          type: string
-          description: Pin description
-    PinWithAuthor:
-      allOf:
-        - $ref: '#/components/schemas/PinBasic'
-        - type: object
-          properties:
-            author:
-              description: Pin author data
-              $ref: '#/components/schemas/Account'
+            $ref: '#/components/schemas/PinWithAuthorDetails'
   securitySchemes:
     jwtAuth:
       type: http
