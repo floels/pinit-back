@@ -127,8 +127,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Fixtures
-pinit_api/fixtures/
-
 # Misc.
 .DS_Store

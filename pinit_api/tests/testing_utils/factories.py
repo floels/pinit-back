@@ -40,6 +40,7 @@ class AccountFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     initial = factory.LazyAttribute(lambda account: account.first_name[0].upper())
     profile_picture_url = factory.Faker("image_url")
+    description = factory.Faker("sentence")
     owner = factory.SubFactory(
         UserFactory, random_sequence=factory.SelfAttribute("..random_sequence")
     )
