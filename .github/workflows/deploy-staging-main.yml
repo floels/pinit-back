@@ -1,0 +1,68 @@
+name: Deploy Staging Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile.staging-main -t pinit-api:${{ github.sha }} .
+
+      - name: Run tests
+        run: docker run pinit-api:${{ github.sha }} /bin/sh -c "python manage.py test"
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+
+      - name: Tag and push Docker image to Amazon ECR
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          URI_TAG=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
+          docker tag pinit-api:${COMMIT_SHA} $URI_TAG
+          docker push $URI_TAG
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Dockerrun.aws.json
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          IMAGE_REPO_NAME=pinit-api
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
+          echo '{
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "'$IMAGE_URI'",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": "80"
+              }
+            ]
+          }' > Dockerrun.aws.json
+
+     - name: Install AWS Elastic Beanstalk CLI
+        run: |
+          pip install awsebcli --upgrade
+
+     - name: Deploy to Elastic Beanstalk environment
+        run: eb deploy $EB_ENV_NAME
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}

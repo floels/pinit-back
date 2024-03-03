@@ -1,0 +1,18 @@
+branch-defaults:
+  build-staging-deployment-pipeline:
+    environment: pinit-api-manual-creation
+  default:
+    environment: pinit-api-test
+environment-defaults:
+  pinit-api-test:
+    branch: null
+    repository: null
+global:
+  application_name: pinit-api
+  default_ec2_keyname: null
+  default_platform: Docker
+  default_region: eu-north-1
+  include_git_submodules: true
+  instance_profile: null
+  sc: git
+  workspace_type: Application

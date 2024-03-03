@@ -1,0 +1,18 @@
+FROM python:3.12.2-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+COPY requirements.txt /requirements.txt
+RUN pip install -r /requirements.txt
+
+WORKDIR /app
+
+COPY . /app
+
+# Inspired by https://dev.to/ki3ani/deploying-your-first-dockerized-django-rest-api-on-aws-elastic-beanstalk-a-comprehensive-guide-2m77
+EXPOSE 8000
+# We dont run 'python manage.py migrate' for staging branches, otherwise
+# it will apply migrations to the one and only staging database instance.
+# This means some staging branches might not actually work in staging.
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

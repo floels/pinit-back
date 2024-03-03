@@ -1,0 +1,103 @@
+name: Deploy Branch
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile.staging-branch -t pinit-api:${{ github.sha }} .
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+
+      - name: Tag and push Docker image to Amazon ECR
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          URI_TAG=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
+          docker tag pinit-api:${COMMIT_SHA} $URI_TAG
+          docker push $URI_TAG
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Dockerrun.aws.json
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
+          echo '{
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "'$IMAGE_URI'",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": "80"
+              }
+            ]
+          }' > Dockerrun.aws.json
+
+     - name: Install AWS Elastic Beanstalk CLI
+        run: |
+          pip install awsebcli --upgrade
+
+     - name: Configure Elastic Beanstalk CLI
+        run: |
+          mkdir -p .elasticbeanstalk
+          echo "branch-defaults:
+            default:
+              environment: $EB_ENV_NAME
+          environment-defaults:
+            $EB_ENV_NAME:
+              branch: null
+              repository: null
+          global:
+            application_name: pinit-api
+            default_ec2_keyname: null
+            default_platform: Docker
+            default_region: eu-north-1
+            include_git_submodules: true
+            instance_profile: null
+            sc: git
+            workspace_type: Application" > .elasticbeanstalk/config.yml
+        env:
+          EB_ENV_NAME: pinit-api-${{ github.ref_name }}
+
+     - name: Create Elastic Beanstalk environment if needed
+        run: |
+          EB_ENV_NAME=pinit-api-${{ github.ref_name }}
+          if ! eb status $EB_ENV_NAME; then
+            eb create $EB_ENV_NAME --single
+            eb use $EB_ENV_NAME
+            eb setenv DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} \
+                    POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+                    POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+                    S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID=${{ secrets.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID }} \
+                    S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY=${{ secrets.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY }} \
+                    DJANGO_SETTINGS_MODULE=pinit.settings.staging
+          fi
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+
+     - name: Deploy to Elastic Beanstalk environment
+        run: eb deploy $EB_ENV_NAME
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}

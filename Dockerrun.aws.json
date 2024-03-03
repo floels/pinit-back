@@ -1,0 +1,12 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "771527521576.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:c61db91b4838436c0b1d5df36579aea081e8bb78",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "80"
+    }
+  ]
+}
