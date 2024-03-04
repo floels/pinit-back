@@ -1,6 +1,10 @@
 name: Deploy Staging
 
 on:
+  # TODO: remove
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -34,7 +38,8 @@ on:
 #       - name: Shut down Docker container
 #         run: docker-compose -f docker-compose.ci.yml down
 
-  build:
+jobs:
+  deploy:
     #needs: test #TODO: uncomment
     runs-on: ubuntu-latest
     environment:
@@ -46,11 +51,15 @@ on:
       - name: Build Docker image
         run: docker build -f Dockerfile.staging -t pinit-api:${{ github.sha }} .
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
       - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Tag and push Docker image to Amazon ECR
         run: |
@@ -60,10 +69,24 @@ on:
           docker tag pinit-api:${COMMIT_SHA} $IMAGE_URI
           docker push $IMAGE_URI
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+      - name: Run migrations
+        run: |
+          docker run \
+          --env DJANGO_SETTINGS_MODULE=pinit.settings.staging \
+          --env DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY \
+          --env POSTGRES_USER=$POSTGRES_USER \
+          --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+          --env POSTGRES_HOST=pinit-staging.c3eo8qy8w69x.eu-north-1.rds.amazonaws.com \
+          --env POSTGRES_PORT=5432 \
+          --env POSTGRES_DB=pinit-staging \
+          --env S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID=${{ secrets.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID }} \
+          --env S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY=${{ secrets.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY }} \
+          pinit-api:${{ github.sha }} python manage.py migrate
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
       - name: Generate Dockerrun.aws.json
         run: |
           COMMIT_SHA=${{ github.sha }}
