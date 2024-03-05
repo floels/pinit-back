@@ -10,7 +10,4 @@ WORKDIR /app
 
 COPY . /app
 
-# Inspired by https://dev.to/ki3ani/deploying-your-first-dockerized-django-rest-api-on-aws-elastic-beanstalk-a-comprehensive-guide-2m77
-EXPOSE 8000
-CMD ["python", "manage.py", "migrate"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
