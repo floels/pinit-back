@@ -78,7 +78,7 @@ jobs:
           --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
           --env POSTGRES_HOST=pinit-staging.c3eo8qy8w69x.eu-north-1.rds.amazonaws.com \
           --env POSTGRES_PORT=5432 \
-          --env POSTGRES_DB=pinit-staging \
+          --env POSTGRES_DB=pinit_staging \
           --env S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID=${{ secrets.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID }} \
           --env S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY=${{ secrets.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY }} \
           pinit-api:${{ github.sha }} python manage.py migrate

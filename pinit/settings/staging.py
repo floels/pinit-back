@@ -15,7 +15,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "HOST": "pinit-staging.c3eo8qy8w69x.eu-north-1.rds.amazonaws.com",
-        "NAME": "pinit-staging",
+        "NAME": "pinit_staging",
         "PORT": "5432",
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
