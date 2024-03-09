@@ -84,10 +84,14 @@ class Pin(models.Model):
 class Board(models.Model):
     unique_id = models.CharField(max_length=15, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    slug = models.CharField(max_length=200, null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="boards")
     pins = models.ManyToManyField(Pin, through="PinInBoard", related_name="boards")
     last_pin_added_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (("author", "slug"),)
 
     def save(self, *args, **kwargs):
         if not self.unique_id:

@@ -9,7 +9,7 @@ class BoardReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Board
-        fields = ["unique_id", "title", "first_image_urls"]
+        fields = ["unique_id", "name", "slug", "first_image_urls"]
 
     def get_first_image_urls(self, obj):
         oldest_pins = PinInBoard.objects.filter(board=obj).order_by("last_saved_at")[

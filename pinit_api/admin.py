@@ -100,7 +100,7 @@ class PinAdmin(admin.ModelAdmin):
 
 
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ("unique_id", "title", "author", "created_at")
+    list_display = ("unique_id", "name", "slug", "author", "created_at")
     ordering = ("-created_at",)
 
 
