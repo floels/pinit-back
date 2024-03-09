@@ -1,46 +1,12 @@
 name: Deploy Staging
 
 on:
-  # TODO: remove
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
 
-# TODO: uncomment
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     environment:
-#       name: test
-#     steps:
-#       - name: Check out code
-#         uses: actions/checkout@v3
-
-#       - name: Build Docker container
-#         run: docker-compose -f docker-compose.ci.yml up -d
-#         env:
-#           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-#           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-#           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-#           S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: ${{ secrets.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID }}
-#           S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: ${{ secrets.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY }}
-
-#       - name: Run migrations
-#         run: docker-compose -f docker-compose.ci.yml exec -T web python manage.py migrate
-
-#       - name: Run tests
-#         run: |
-#           docker-compose -f docker-compose.ci.yml exec -T web python manage.py test
-
-#       - name: Shut down Docker container
-#         run: docker-compose -f docker-compose.ci.yml down
-
 jobs:
   deploy:
-    #needs: test #TODO: uncomment
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -61,6 +27,16 @@ jobs:
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Clear existing images in ECR repository
+        run: |
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          REPOSITORY_NAME=pinit-api
+          aws ecr list-images --repository-name pinit-api --query 'imageIds[*]' --output json | jq -r '.[] | [.imageDigest] | @tsv' | while read IMAGE_DIGEST; do
+            aws ecr batch-delete-image --repository-name pinit-api --image-ids imageDigest=$IMAGE_DIGEST
+          done
+        env:
+          AWS_DEFAULT_REGION: eu-north-1
+
       - name: Tag and push Docker image to Amazon ECR
         run: |
           COMMIT_SHA=${{ github.sha }}
@@ -72,7 +48,6 @@ jobs:
       - name: Run migrations
         run: |
           docker run \
-          --env DJANGO_SETTINGS_MODULE=pinit.settings.staging \
           --env DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY \
           --env POSTGRES_USER=$POSTGRES_USER \
           --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
@@ -116,38 +91,3 @@ jobs:
           region: eu-north-1
           version_label: ${{ github.sha }}
           deployment_package: Dockerrun.aws.json
-
-    # TODO: uncomment
-    # clean-up:
-    #   runs-on: ubuntu-latest
-    #   needs: deploy
-    #         - name: Clear ECR repository except for the latest image
-    #       run: |
-    #         REPOSITORY_NAME=pinit-api
-    #         AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-    #         COMMIT_SHA=${{ github.sha }}
-    #         DEPLOYED_IMAGE_TAG=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
-            
-    #         # Get the digest of the latest image
-    #           LATEST_IMAGE_DIGEST=$(aws ecr describe-images --repository-name $REPOSITORY_NAME \
-    #             --region eu-north-1 \
-    #             --image-ids imageTag=$DEPLOYED_IMAGE_TAG \
-    #             --query 'imageDetails[0].imageDigest' \
-    #             --output text)
-            
-    #         # List all image digests in the repository
-    #         IMAGE_DIGESTS=$(aws ecr list-images --repository-name $REPOSITORY_NAME --region $REGION --query 'imageIds[*].imageDigest' --output text)
-            
-    #         # Prepare image IDs for deletion except the latest one
-    #         IMAGE_IDS_FOR_DELETION=$(echo $IMAGE_DIGESTS | tr ' ' '\n' | grep -v $LATEST_IMAGE_DIGEST | awk '{print "imageDigest="$1}')
-            
-    #         # Delete images if any are found for deletion
-    #         if [ ! -z "$IMAGE_IDS_FOR_DELETION" ]; then
-    #           echo "Deleting all images except the latest one..."
-    #           aws ecr batch-delete-image --repository-name pinit-api --region eu-north-1 --image-ids $IMAGE_IDS_FOR_DELETION
-    #         else
-    #           echo "No images to delete."
-    #         fi
-    #       env:
-    #         AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
-    #         AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
