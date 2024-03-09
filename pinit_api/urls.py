@@ -17,12 +17,17 @@ urlpatterns = [
     path("signup/", signup.sign_up, name="sign_up"),
     path(
         "token/obtain/",
-        authentication.TokenObtainPairView.as_view(),
+        authentication.obtain_token_pair,
         name="obtain_token",
     ),
     path(
+        "token/obtain-demo/",
+        authentication.obtain_demo_token_pair,
+        name="obtain_demo_token",
+    ),
+    path(
         "token/refresh/",
-        authentication.TokenRefreshView.as_view(),
+        authentication.RefreshTokenView.as_view(),
         name=("refresh_token"),
     ),
     path(

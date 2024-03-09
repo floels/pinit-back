@@ -17,6 +17,49 @@ FORBIDDEN_USERNAMES = [
 ]
 
 
+@api_view(["POST"])
+def sign_up(request):
+    user_serializer = UserCreateSerializer(data=request.data)
+
+    if not user_serializer.is_valid():
+        return get_error_response(user_serializer=user_serializer)
+
+    user = user_serializer.save()
+
+    create_personal_account(user=user)
+
+    tokens_data = get_tokens_data(user=user)
+
+    return Response(tokens_data, status=status.HTTP_201_CREATED)
+
+
+def get_error_response(user_serializer=None):
+    flattened_errors = []
+
+    for field_errors in user_serializer.errors.values():
+        for error in field_errors:
+            flattened_errors.append({"code": str(error)})
+
+    return Response({"errors": flattened_errors}, status=400)
+
+
+def create_personal_account(user=None):
+    email = user.email
+
+    username = compute_default_username_from_email(email=email)
+    first_name, last_name = compute_first_and_last_name(email=email)
+    initial = compute_initial(email=email)
+
+    Account.objects.create(
+        username=username,
+        type="personal",
+        first_name=first_name,
+        last_name=last_name,
+        initial=initial,
+        owner=user,
+    )
+
+
 def compute_default_username_from_email(email=""):
     username_candidate = compute_username_candidate(email=email)
 
@@ -62,46 +105,3 @@ def compute_derived_username(username_candidate=""):
         suffix += 1
 
     return derived_username
-
-
-def get_error_response(user_serializer=None):
-    flattened_errors = []
-
-    for field_errors in user_serializer.errors.values():
-        for error in field_errors:
-            flattened_errors.append({"code": str(error)})
-
-    return Response({"errors": flattened_errors}, status=400)
-
-
-def create_personal_account(user=None):
-    email = user.email
-
-    username = compute_default_username_from_email(email=email)
-    first_name, last_name = compute_first_and_last_name(email=email)
-    initial = compute_initial(email=email)
-
-    Account.objects.create(
-        username=username,
-        type="personal",
-        first_name=first_name,
-        last_name=last_name,
-        initial=initial,
-        owner=user,
-    )
-
-
-@api_view(["POST"])
-def sign_up(request):
-    user_serializer = UserCreateSerializer(data=request.data)
-
-    if not user_serializer.is_valid():
-        return get_error_response(user_serializer=user_serializer)
-
-    user = user_serializer.save()
-
-    create_personal_account(user=user)
-
-    tokens_data = get_tokens_data(user=user)
-
-    return Response(tokens_data, status=status.HTTP_201_CREATED)

@@ -12,6 +12,7 @@ from pinit_api.lib.constants import (
 )
 
 S3_BUCKET_NAME = "pinit-staging"
+S3_BUCKET_REGION = "eu-north-1"
 
 
 # Inspired by https://docs.getmoto.org/en/latest/docs/getting_started.html#class-decorator
@@ -41,9 +42,11 @@ class PinCreationTests(APITestCase):
         }
 
     def create_s3_bucket(self):
-        s3_resource = boto3.resource("s3")
-        bucket = s3_resource.Bucket(S3_BUCKET_NAME)
-        bucket.create()
+        s3_client = boto3.client("s3", region_name=S3_BUCKET_REGION)
+        s3_client.create_bucket(
+            Bucket=S3_BUCKET_NAME,
+            CreateBucketConfiguration={"LocationConstraint": "eu-north-1"},
+        )
 
     def test_create_pin_happy_path(self):
         response = self.post()

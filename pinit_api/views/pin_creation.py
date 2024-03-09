@@ -12,24 +12,6 @@ from pinit_api.lib.constants import (
 from pinit_api.serializers.pin_serializers import PinBaseReadSerializer
 
 
-def compute_file_key_s3(pin_id, extension):
-    return f"pins/pin_{pin_id}{extension}"
-
-
-def compute_file_url_s3(file_key_s3):
-    return f"https://{settings.S3_PINS_BUCKET_URL}/{file_key_s3}"
-
-
-def upload_file_to_s3(file, file_name):
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id=settings.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY,
-    )
-
-    s3_client.upload_fileobj(file, settings.S3_PINS_BUCKET_NAME, file_name)
-
-
 class CreatePinRequestSerializer(serializers.Serializer):
     title = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
@@ -53,18 +35,33 @@ class CreatePinView(generics.CreateAPIView):
 
         _, uploaded_file_extension = os.path.splitext(uploaded_file.name)
 
-        file_key_s3 = compute_file_key_s3(pin.unique_id, uploaded_file_extension)
+        file_key_s3 = self.compute_file_key_s3(pin.unique_id, uploaded_file_extension)
 
         try:
-            upload_file_to_s3(uploaded_file, file_key_s3)
+            self.upload_file_to_s3(uploaded_file, file_key_s3)
         except:
             pin.delete()
             response_data = {"errors": [{"code": ERROR_CODE_PIN_CREATION_FAILED}]}
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        pin.image_url = compute_file_url_s3(file_key_s3)
+        pin.image_url = self.compute_file_url_s3(file_key_s3)
         pin.save()
 
         pin_serializer = PinBaseReadSerializer(pin)
 
         return Response(pin_serializer.data, status=status.HTTP_201_CREATED)
+
+    def compute_file_key_s3(self, pin_id, extension):
+        return f"pins/pin_{pin_id}{extension}"
+
+    def upload_file_to_s3(self, file, file_name):
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=settings.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY,
+        )
+
+        s3_client.upload_fileobj(file, settings.S3_PINS_BUCKET_NAME, file_name)
+
+    def compute_file_url_s3(self, file_key_s3):
+        return f"https://{settings.S3_PINS_BUCKET_URL}/{file_key_s3}"

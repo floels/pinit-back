@@ -24,6 +24,8 @@ class AuthenticationTests(TestCase):
             password=self.existing_user_password,
         )
 
+        User.objects.create_user(email="demo@pinit.com", password="Pa$$w0rd")
+
     def test_obtain_token_happy_path(self):
         request_payload = {
             "email": self.existing_user_email,
@@ -123,6 +125,16 @@ class AuthenticationTests(TestCase):
             response_data["errors"],
             [{"code": ERROR_CODE_INVALID_PASSWORD}],
         )
+
+    def test_obtain_demo_token(self):
+        response = self.client.get("/api/token/obtain-demo/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        self.assertTrue(response_data["access_token"])
+        self.assertTrue(response_data["refresh_token"])
 
     def test_refresh_token_wrong_refresh_token(self):
         response = self.client.post(
