@@ -39,8 +39,6 @@ class SavePinView(views.APIView):
 
         was_updated = self.update_or_create_pin_in_board(pin=pin, board=board)
 
-        self.update_board_cover_picture_if_needed(board=board, pin=pin)
-
         return self.get_ok_response(
             pin_unique_id=pin_unique_id,
             board_unique_id=board_unique_id,
@@ -49,10 +47,6 @@ class SavePinView(views.APIView):
 
     def check_user_is_board_author(self, user=None, board=None):
         return board.author == user.account
-
-    def update_last_pin_added_at(self, board=None, date=None):
-        board.last_pin_added_at = date
-        board.save()
 
     def update_or_create_pin_in_board(self, pin=None, board=None):
         now = timezone.now()
@@ -71,6 +65,10 @@ class SavePinView(views.APIView):
         was_updated = existing_pin_save is not None
 
         return was_updated
+
+    def update_last_pin_added_at(self, board=None, date=None):
+        board.last_pin_added_at = date
+        board.save()
 
     def get_response_pin_not_found(self):
         return Response(
@@ -95,8 +93,3 @@ class SavePinView(views.APIView):
             {"pin_id": pin_unique_id, "board_id": board_unique_id},
             status=status.HTTP_200_OK if was_updated else status.HTTP_201_CREATED,
         )
-
-    def update_board_cover_picture_if_needed(self, board=None, pin=None):
-        if not board.cover_picture_url:
-            board.cover_picture_url = pin.image_url
-            board.save()

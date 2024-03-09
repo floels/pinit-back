@@ -85,7 +85,6 @@ class Board(models.Model):
     unique_id = models.CharField(max_length=15, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200)
-    cover_picture_url = models.URLField(null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="boards")
     pins = models.ManyToManyField(Pin, through="PinInBoard", related_name="boards")
     last_pin_added_at = models.DateTimeField(null=True, blank=True)

@@ -81,14 +81,7 @@ class SavePinTests(APITestCase):
         self.pin_already_saved = PinFactory()
         self.board.pins.add(self.pin_already_saved)
 
-        self.board.cover_picture_url = self.pin_already_saved.image_url
-        self.board.save()
-
         self.pin_to_save = PinFactory()
-
-        self.empty_board = BoardFactory(author=self.board.author)
-        self.empty_board.cover_picture_url = None
-        self.empty_board.save()
 
         self.board_not_owned = BoardFactory()
 
@@ -114,11 +107,6 @@ class SavePinTests(APITestCase):
             delta=timedelta(seconds=1),
         )
 
-    def check_board_cover_picture_unchanged(self, board=None):
-        board.refresh_from_db()
-
-        self.assertEqual(board.cover_picture_url, self.pin_already_saved.image_url)
-
     def test_save_pin_happy_path(self):
         request_payload = {
             "pin_id": self.pin_to_save.unique_id,
@@ -139,8 +127,6 @@ class SavePinTests(APITestCase):
 
         self.check_pin_save_last_saved_at(created_pin_in_board)
 
-        self.check_board_cover_picture_unchanged(board=self.board)
-
     def test_save_pin_already_saved(self):
         request_payload = {
             "pin_id": self.pin_already_saved.unique_id,
@@ -156,18 +142,6 @@ class SavePinTests(APITestCase):
         self.check_board_last_pin_added_at(self.board)
 
         self.check_pin_save_last_saved_at(self.board.pins_in_board.first())
-
-    def test_save_pin_empty_board(self):
-        request_payload = {
-            "pin_id": self.pin_to_save.unique_id,
-            "board_id": self.empty_board.unique_id,
-        }
-
-        self.post(request_payload=request_payload)
-
-        self.empty_board.refresh_from_db()
-
-        self.assertEqual(self.empty_board.cover_picture_url, self.pin_to_save.image_url)
 
     def test_save_pin_doesnt_exist(self):
         non_existing_pin_id = 100_000_000_000_000_000

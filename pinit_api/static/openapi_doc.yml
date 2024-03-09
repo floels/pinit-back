@@ -463,13 +463,15 @@ components:
           description: Board unique ID
           example: "441312392807868"
         title:
-          type: string
           description: Board title
-          example: "My food board"
-        cover_picture_url:
           type: string
-          format: uri
-          description: Board cover picture URL
+          example: "My food board"
+        first_image_urls:
+          description: List of first image URLs
+          type: array
+          items:
+            type: string
+            format: uri
     AccountWithBoards:
       allOf:
         - $ref: '#/components/schemas/AccountBase'

@@ -10,6 +10,8 @@ NUMBER_ACCOUNTS_TO_CREATE = 100
 NUMBER_PINS_TO_CREATE = 1000
 NUMBER_BOARDS_TO_CREATE = 100
 
+EMAIL_ADDRESS_DEMO_USER = "pinit@demo.com"
+
 
 class Command(BaseCommand):
     help = "Seeds the database with test data."
@@ -55,7 +57,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(message))
 
     def delete_existing_users(self):
-        User.objects.filter(is_admin=False).delete()
+        User.objects.filter(is_admin=False).exclude(
+            email=EMAIL_ADDRESS_DEMO_USER
+        ).delete()
 
     def print_number_remaining_items(self):
         self.print_number_instances(User)
@@ -185,9 +189,11 @@ class Command(BaseCommand):
         return number_created_boards
 
     def save_pins_in_boards(self):
-        all_pins = Pin.objects.all()
+        all_pins = list(
+            Pin.objects.all()
+        )  # Convert to list for efficient random sampling
         all_boards = Board.objects.all()
 
-        for pin in all_pins:
-            random_board = random.choice(all_boards)
-            random_board.pins.add(pin)
+        for board in all_boards:
+            random_pins = random.sample(all_pins, 10)
+            board.pins.set(random_pins)
