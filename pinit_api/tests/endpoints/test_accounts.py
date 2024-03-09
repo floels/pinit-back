@@ -56,7 +56,8 @@ class AccountsTestCase(APITestCase):
             [
                 {
                     "unique_id": board.unique_id,
-                    "title": board.title,
+                    "name": board.name,
+                    "slug": board.slug,
                     "first_image_urls": board_first_image_urls(board),
                 }
                 for board in self.account.boards.order_by(

@@ -2,6 +2,7 @@ import factory
 import random
 from datetime import date
 from pinit_api.models import User, Account, Pin, Board
+from django.utils.text import slugify
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -60,7 +61,8 @@ class BoardFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Board
 
-    title = factory.Faker("sentence", nb_words=4)
+    name = factory.Faker("sentence", nb_words=4)
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
     author = factory.LazyAttribute(
         lambda o: (
             o.factory_parent.author
