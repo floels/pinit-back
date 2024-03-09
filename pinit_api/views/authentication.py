@@ -1,7 +1,6 @@
 import pytz
 from datetime import datetime
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView as SimpleJWTTokenObtainPairView,
     TokenViewBase,
 )
 from rest_framework import status
