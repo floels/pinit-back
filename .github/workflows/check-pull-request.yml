@@ -7,8 +7,6 @@ on:
 
 jobs:
   test:
-    # TODO: remove
-    if: false
     runs-on: ubuntu-latest
     environment:
       name: test
@@ -17,21 +15,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker container
-        run: docker-compose -f docker-compose.ci.yml up -d
-        env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: ${{ secrets.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID }}
-          S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: ${{ secrets.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY }}
+        run: docker-compose -f docker-compose.test.yml up -d
 
       - name: Run migrations
-        run: docker-compose -f docker-compose.ci.yml exec -T web python manage.py migrate
+        run: docker-compose -f docker-compose.test.yml exec -T web python manage.py migrate
 
       - name: Run tests with coverage
         run: |
-          docker-compose -f docker-compose.ci.yml exec -T web coverage run manage.py test
-          docker-compose -f docker-compose.ci.yml exec -T web coverage xml
+          docker-compose -f docker-compose.test.yml exec -T web coverage run manage.py test
+          docker-compose -f docker-compose.test.yml exec -T web coverage xml
 
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v3
@@ -39,4 +31,4 @@ jobs:
           file: ./app/coverage.xml
 
       - name: Shut down Docker container
-        run: docker-compose -f docker-compose.ci.yml down
+        run: docker-compose -f docker-compose.test.yml down

@@ -2,9 +2,9 @@ from .base import *
 from decouple import config
 from datetime import timedelta
 
-DEBUG = True
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
-INSTALLED_APPS += ("django.contrib.staticfiles",)
+DEBUG = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True

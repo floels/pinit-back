@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.postgres",
+    "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -50,8 +51,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "pinit.wsgi.application"
-
-SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = "pinit_api.User"
@@ -112,4 +111,3 @@ S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID = config("S3_PINS_BUCKET_UPLOADER_ACCESS_K
 S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY = config(
     "S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY"
 )
-S3_REGION_NAME = "eu-west-3"
