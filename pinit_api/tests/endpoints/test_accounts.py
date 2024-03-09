@@ -3,8 +3,9 @@ from datetime import timedelta
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
-from ..testing_utils import AccountFactory, BoardFactory
+from ..testing_utils import AccountFactory, BoardFactory, PinFactory
 from pinit_api.lib.constants import ERROR_CODE_UNAUTHORIZED
+from pinit_api.serializers.board_serializers import NUMBER_FIRST_IMAGES
 
 
 class AccountsTestCase(APITestCase):
@@ -14,6 +15,13 @@ class AccountsTestCase(APITestCase):
         self.client = APIClient()
 
         self.user = self.account.owner
+
+        self.boards = BoardFactory.create_batch(3, author=self.account)
+
+        self.pins_first_board = PinFactory.create_batch(5)
+
+        for pin in self.pins_first_board:
+            self.boards[0].pins.add(pin)
 
     def check_response_data_against_account_public_details(
         self, response_data=None, account=None, includes_private_details=False
@@ -33,30 +41,32 @@ class AccountsTestCase(APITestCase):
 
         boards_data = response_data["boards"]
 
-        self.check_boards_data_against_board_list(
-            boards_data=boards_data, board_list=account.boards
-        )
+        self.check_boards_data_against_boards_list(boards_data=boards_data)
 
-    def check_boards_data_against_board_list(self, boards_data=None, board_list=None):
+    def check_boards_data_against_boards_list(self, boards_data=None):
+        board_first_image_urls = lambda board: [
+            pin_in_board.pin.image_url
+            for pin_in_board in board.pins_in_board.order_by("last_saved_at")[
+                :NUMBER_FIRST_IMAGES
+            ]
+        ]
+
         self.assertEqual(
             boards_data,
             [
                 {
                     "unique_id": board.unique_id,
                     "title": board.title,
-                    "cover_picture_url": board.cover_picture_url,
+                    "first_image_urls": board_first_image_urls(board),
                 }
-                for board in board_list.order_by("-last_pin_added_at", "-created_at")
+                for board in self.account.boards.order_by(
+                    "-last_pin_added_at", "-created_at"
+                )
             ],
         )
 
 
 class GetAccountPublicDetailsTests(AccountsTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.board = BoardFactory(author=self.account)
-
     def test_get_account_details_happy_path(self):
         response = self.get(username=self.account.username)
 
@@ -81,20 +91,6 @@ class GetAccountPublicDetailsTests(AccountsTestCase):
 
 
 class GetMyAccountDetailsTests(AccountsTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.boardLeastRecent = BoardFactory(author=self.account)
-        self.boardMostRecent = BoardFactory(author=self.account)
-
-        two_days_ago = timezone.now() - timedelta(days=2)
-        self.boardLeastRecent.last_pin_added_at = two_days_ago
-        self.boardLeastRecent.save()
-
-        one_day_ago = timezone.now() - timedelta(days=1)
-        self.boardMostRecent.last_pin_added_at = one_day_ago
-        self.boardMostRecent.save()
-
     def test_happy_path(self):
         response = self.get()
 
