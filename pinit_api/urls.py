@@ -2,14 +2,15 @@ from django.urls import path
 from django.views.generic import TemplateView
 
 from .views import (
-    accounts,
+    signup,
     authentication,
+    accounts,
     pin_creation,
     pin_suggestions,
     pins,
     search_suggestions,
     search,
-    signup,
+    boards,
 )
 
 urlpatterns = [
@@ -55,6 +56,11 @@ urlpatterns = [
         "search-suggestions/",
         search_suggestions.get_search_suggestions,
         name="get_search_suggestions",
+    ),
+    path(
+        "boards/<str:username>/<str:slug>/",
+        boards.GetBoardDetailsView.as_view(),
+        name="get_board_details",
     ),
     path("create-pin/", pin_creation.CreatePinView.as_view(), name="create_pin"),
     path(

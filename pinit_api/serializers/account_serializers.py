@@ -1,21 +1,7 @@
 from rest_framework import serializers
-from ..models import Account, Board
-from ..serializers.board_serializers import BoardReadSerializer
-
-
-class AccountBaseReadSerializer(serializers.ModelSerializer):
-    display_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Account
-        fields = (
-            "username",
-            "display_name",
-            "profile_picture_url",
-        )
-
-    def get_display_name(self, obj):
-        return obj.display_name
+from ..models import Board
+from .common_serializers import AccountBaseReadSerializer
+from .board_serializers import BoardWithBasicDetailsReadSerializer
 
 
 class AccountWithBoardsReadSerializer(AccountBaseReadSerializer):
@@ -28,7 +14,7 @@ class AccountWithBoardsReadSerializer(AccountBaseReadSerializer):
         ordered_boards = Board.objects.filter(author=obj).order_by(
             "-last_pin_added_at", "-created_at"
         )
-        return BoardReadSerializer(ordered_boards, many=True).data
+        return BoardWithBasicDetailsReadSerializer(ordered_boards, many=True).data
 
 
 class AccountWithPublicDetailsReadSerializer(AccountWithBoardsReadSerializer):
