@@ -20,7 +20,6 @@ class AccountWithBoardsReadSerializer(AccountBaseReadSerializer):
 class AccountWithPublicDetailsReadSerializer(AccountWithBoardsReadSerializer):
     class Meta(AccountWithBoardsReadSerializer.Meta):
         fields = AccountWithBoardsReadSerializer.Meta.fields + (
-            "initial",
             "background_picture_url",
             "description",
         )

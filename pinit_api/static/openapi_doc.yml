@@ -73,7 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinBase'
+                $ref: '#/components/schemas/Pin'
         '401':
           description: Failed authentication
   /api/pin-suggestions/:
@@ -440,7 +440,7 @@ paths:
                             Error code: `invalid_refresh_token`
 components:
   schemas:
-    AccountBase:
+    Account:
       type: object
       properties:
         username:
@@ -451,6 +451,10 @@ components:
           type: string
           description: Account display name
           example: "John Doe"
+        initial:
+          type: string
+          description: Account initial
+          example: "J"
         profile_picture_url:
           type: string
           format: uri
@@ -474,7 +478,7 @@ components:
             format: uri
     AccountWithBoards:
       allOf:
-        - $ref: '#/components/schemas/AccountBase'
+        - $ref: '#/components/schemas/Account'
         - type: object
           properties:
             boards:
@@ -515,7 +519,7 @@ components:
               format: email
               description: Account owner email
               example: "johndoe@example.com"
-    PinBase:
+    Pin:
       type: object
       properties:
         unique_id:
@@ -532,11 +536,11 @@ components:
           example: "Pin title"
     PinWithAuthorDetails:
       allOf:
-        - $ref: '#/components/schemas/PinBase'
+        - $ref: '#/components/schemas/Pin'
         - properties:
             author:
               description: Pin author data
-              $ref: '#/components/schemas/AccountBase'
+              $ref: '#/components/schemas/Account'
     PinWithFullDetails:
       allOf:
         - $ref: '#/components/schemas/PinWithAuthorDetails'
