@@ -69,10 +69,11 @@ class SearchTests(APITestCase):
         self.check_author_data(author_data=author_data)
 
     def check_author_data(self, author_data=None):
-        self.assertEqual(len(author_data), 3)
+        self.assertEqual(len(author_data), 4)
 
         self.assertTrue(author_data["username"])
         self.assertTrue(author_data["display_name"])
+        self.assertTrue(author_data["initial"])
         self.assertTrue(author_data["profile_picture_url"])
 
     def check_last_result_first_page(self, last_result=None):

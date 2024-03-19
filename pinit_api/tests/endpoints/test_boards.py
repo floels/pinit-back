@@ -49,10 +49,11 @@ class GetBoardDetailsViewTests(APITestCase):
         self.check_pins_data(pins_data=pins_data)
 
     def check_author_data(self, author_data=None):
-        self.assertEqual(len(author_data), 3)
+        self.assertEqual(len(author_data), 4)
 
         self.assertEqual(author_data["username"], self.author.username)
         self.assertEqual(author_data["display_name"], self.author.display_name)
+        self.assertEqual(author_data["initial"], self.author.initial)
         self.assertEqual(
             author_data["profile_picture_url"], self.author.profile_picture_url
         )
@@ -79,10 +80,11 @@ class GetBoardDetailsViewTests(APITestCase):
         )
 
     def check_pin_author_data(self, pin_author_data=None, pin_author=None):
-        self.assertEqual(len(pin_author_data), 3)
+        self.assertEqual(len(pin_author_data), 4)
 
         self.assertEqual(pin_author_data["username"], pin_author.username)
         self.assertEqual(pin_author_data["display_name"], pin_author.display_name)
+        self.assertEqual(pin_author_data["initial"], pin_author.initial)
         self.assertEqual(
             pin_author_data["profile_picture_url"], pin_author.profile_picture_url
         )

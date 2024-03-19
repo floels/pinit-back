@@ -58,10 +58,11 @@ class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         )
 
     def check_author_data_against_account_object(self, author_data=None, account=None):
-        self.assertEqual(len(author_data), 3)
+        self.assertEqual(len(author_data), 4)
 
         self.assertEqual(author_data["username"], account.username)
         self.assertEqual(author_data["display_name"], account.display_name)
+        self.assertEqual(author_data["initial"], account.initial)
         self.assertEqual(
             author_data["profile_picture_url"], account.profile_picture_url
         )

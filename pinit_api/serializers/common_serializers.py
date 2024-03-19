@@ -12,6 +12,7 @@ class AccountBaseReadSerializer(serializers.ModelSerializer):
         fields = (
             "username",
             "display_name",
+            "initial",
             "profile_picture_url",
         )
 
